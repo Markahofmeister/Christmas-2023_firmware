@@ -123,6 +123,11 @@ int main(void)
   MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
 
+  // Define return variable for ADC
+  uint16_t ADC_Return = 0;
+  // Calibrate HAL
+  HAL_ADCEx_Calibration_Start(&hadc1);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -184,13 +189,38 @@ int main(void)
 
 		  case 3:		// Case 3 - Test ADC functionality
 
-			  // If ADC > 0.5 * VDD, turn on LED.
+			  // Start ADC Conversion
+			  HAL_ADC_Start(&hadc1);
 
+			 // Poll ADC1 Peripheral & TimeOut = 1mSec
+			  HAL_ADC_PollForConversion(&hadc1, 1);
+
+			  // Read The ADC Conversion Result & Map It To PWM DutyCycle
+			  ADC_Return = HAL_ADC_GetValue(&hadc1);
+
+			  // Resolution = 12 bit, 2^12 = 4096
+
+			  // If ADC > 0.5 * VDD, turn on LED.
+			  if(ADC_Return >= 4096/2 && ADC_Return <= 4096) {
+				  HAL_GPIO_WritePin(GPIOC, debugLED, GPIOPinSet[1]);
+			  }
 			  // If ADC < 0.5 * VDD, turn off LED.
+			  else if(ADC_Return <= 4096/2 && ADC_Return >= 0) {
+				  HAL_GPIO_WritePin(GPIOC, debugLED, GPIOPinSet[0]);
+			  }
+			  // Else, something is wrong with my measurement - I should only get between 0 and 4096 return
+			  else {
+				  for(int i = 0; i < 20; i++) {
+					  HAL_GPIO_TogglePin(GPIOC, debugLED);
+					  HAL_Delay(100);
+				  }
+			  }
+
+			  HAL_Delay(10);
 
 		    break;
 
-		  case 4: 		// Case 4 - Light up debug LED on button input interrupts
+		  case 4: 		// Case 4 - Light up debug LED on button input interrupts. Do nothing.
 
 		    break;
 
@@ -323,6 +353,12 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOB, SHIFT_OE_Pin|SHIFT_DATA_Pin|SHIFT_DATA_CLK_Pin|SHIFT_STORE_CLK_Pin
                           |SHIFT_MCLR_Pin, GPIO_PIN_RESET);
 
+  /*Configure GPIO pins : BUTTON_1_Pin BUTTON_5_Pin */
+  GPIO_InitStruct.Pin = BUTTON_1_Pin|BUTTON_5_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
   /*Configure GPIO pin : STAT_LED_Pin */
   GPIO_InitStruct.Pin = STAT_LED_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
@@ -339,11 +375,90 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
+  /*Configure GPIO pins : BUTTON_10_Pin BUTTON_9_Pin BUTTON_8_Pin BUTTON_7_Pin
+                           BUTTON_6_Pin */
+  GPIO_InitStruct.Pin = BUTTON_10_Pin|BUTTON_9_Pin|BUTTON_8_Pin|BUTTON_7_Pin
+                          |BUTTON_6_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI3_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI3_IRQn);
+
+  HAL_NVIC_SetPriority(EXTI4_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI4_IRQn);
+
+  HAL_NVIC_SetPriority(EXTI9_5_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
+
+  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */
+
+void HAL_GPIO_EXTI_Falling_Callback(uint16_t GPIO_Pin) {
+
+	// All buttons trigger the same sequence for now, but this may change later.
+	// GPIO interrupts are enabled in NVIC.
+
+	if(GPIO_Pin == buttonIn_1) {
+		HAL_GPIO_WritePin(GPIOC, debugLED, GPIOPinSet[1]);
+		Hal_Delay(750);
+		HAL_GPIO_WritePin(GPIOC, debugLED, GPIOPinSet[0]);
+	}
+	else if(GPIO_Pin == buttonIn_2) {
+		HAL_GPIO_WritePin(GPIOC, debugLED, GPIOPinSet[1]);
+		Hal_Delay(750);
+		HAL_GPIO_WritePin(GPIOC, debugLED, GPIOPinSet[0]);
+	}
+	else if(GPIO_Pin == buttonIn_3) {
+		HAL_GPIO_WritePin(GPIOC, debugLED, GPIOPinSet[1]);
+		Hal_Delay(750);
+		HAL_GPIO_WritePin(GPIOC, debugLED, GPIOPinSet[0]);
+		}
+	else if(GPIO_Pin == buttonIn_4) {
+		HAL_GPIO_WritePin(GPIOC, debugLED, GPIOPinSet[1]);
+		Hal_Delay(750);
+		HAL_GPIO_WritePin(GPIOC, debugLED, GPIOPinSet[0]);
+		}
+	else if(GPIO_Pin == buttonIn_5) {
+		HAL_GPIO_WritePin(GPIOC, debugLED, GPIOPinSet[1]);
+		Hal_Delay(750);
+		HAL_GPIO_WritePin(GPIOC, debugLED, GPIOPinSet[0]);
+		}
+	else if(GPIO_Pin == buttonIn_6) {
+		HAL_GPIO_WritePin(GPIOC, debugLED, GPIOPinSet[1]);
+		Hal_Delay(750);
+		HAL_GPIO_WritePin(GPIOC, debugLED, GPIOPinSet[0]);
+		}
+	else if(GPIO_Pin == buttonIn_7) {
+		HAL_GPIO_WritePin(GPIOC, debugLED, GPIOPinSet[1]);
+		Hal_Delay(750);
+		HAL_GPIO_WritePin(GPIOC, debugLED, GPIOPinSet[0]);
+		}
+	else if(GPIO_Pin == buttonIn_8) {
+		HAL_GPIO_WritePin(GPIOC, debugLED, GPIOPinSet[1]);
+		Hal_Delay(750);
+		HAL_GPIO_WritePin(GPIOC, debugLED, GPIOPinSet[0]);
+		}
+	else if(GPIO_Pin == buttonIn_9) {
+		HAL_GPIO_WritePin(GPIOC, debugLED, GPIOPinSet[1]);
+		Hal_Delay(750);
+		HAL_GPIO_WritePin(GPIOC, debugLED, GPIOPinSet[0]);
+		}
+	else if(GPIO_Pin == buttonIn_10) {
+		HAL_GPIO_WritePin(GPIOC, debugLED, GPIOPinSet[1]);
+		Hal_Delay(750);
+		HAL_GPIO_WritePin(GPIOC, debugLED, GPIOPinSet[0]);
+		}
+
+}
 
 /* USER CODE END 4 */
 
