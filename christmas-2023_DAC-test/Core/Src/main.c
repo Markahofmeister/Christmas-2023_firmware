@@ -104,6 +104,9 @@ int main(void)
   MX_DAC_Init();
   /* USER CODE BEGIN 2 */
 
+  // Start up DAC
+  HAL_DAC_Start(&hdac, DAC_CHANNEL_1);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -111,6 +114,13 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
+	  for (int i = 0; i < (sizeof(Wave_LUT) / sizeof(Wave_LUT[0])); i++) {
+
+		  HAL_DAC_SetValue(&hdac, DAC_CHANNEL_1, DAC_ALIGN_12B_R, Wave_LUT[i]);			// Send array data to DAC
+		  HAL_Delay(1);		// Humans will be able to hear a 1 kHz sine wave. This isn't exact, but should work.
+
+	  }
+
 
     /* USER CODE BEGIN 3 */
   }
