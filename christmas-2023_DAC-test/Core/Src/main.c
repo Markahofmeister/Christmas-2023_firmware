@@ -4,21 +4,24 @@
   * @file           : main.c
   * @brief          : Main program body
   ******************************************************************************
+  * @attention
   *
-  * Code taken from:
-  * https://github.com/Nunocky/STM32_Nucleo_SDCard_Access/blob/main/CubeIDE%20Project/L476RG_SDCard/Core/Src/main.c
+  * Copyright (c) 2023 STMicroelectronics.
+  * All rights reserved.
+  *
+  * This software is licensed under terms that can be found in the LICENSE file
+  * in the root directory of this software component.
+  * If no LICENSE file comes with this software, it is provided AS-IS.
   *
   ******************************************************************************
   */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "fatfs.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include <string.h>
-#include <stdlib.h>
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -29,6 +32,8 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
+#define NUM_SAMP  128
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -37,24 +42,28 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-SD_HandleTypeDef hsd;
+DAC_HandleTypeDef hdac;
 
 /* USER CODE BEGIN PV */
 
-// Debug LED on PCB
-const uint16_t debugLED = GPIO_PIN_5;			// Port C
-
-// Card detect GPIO
-// Does this need PU/PD?
-const uint16_t SDIO_cardDetect = GPIO_PIN_7;	//Port C
-
+uint32_t Wave_LUT[NUM_SAMP] = {
+    2048, 2149, 2250, 2350, 2450, 2549, 2646, 2742, 2837, 2929, 3020, 3108, 3193, 3275, 3355,
+    3431, 3504, 3574, 3639, 3701, 3759, 3812, 3861, 3906, 3946, 3982, 4013, 4039, 4060, 4076,
+    4087, 4094, 4095, 4091, 4082, 4069, 4050, 4026, 3998, 3965, 3927, 3884, 3837, 3786, 3730,
+    3671, 3607, 3539, 3468, 3394, 3316, 3235, 3151, 3064, 2975, 2883, 2790, 2695, 2598, 2500,
+    2400, 2300, 2199, 2098, 1997, 1896, 1795, 1695, 1595, 1497, 1400, 1305, 1212, 1120, 1031,
+    944, 860, 779, 701, 627, 556, 488, 424, 365, 309, 258, 211, 168, 130, 97,
+    69, 45, 26, 13, 4, 0, 1, 8, 19, 35, 56, 82, 113, 149, 189,
+    234, 283, 336, 394, 456, 521, 591, 664, 740, 820, 902, 987, 1075, 1166, 1258,
+    1353, 1449, 1546, 1645, 1745, 1845, 1946, 2047
+};
 
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_SDIO_SD_Init(void);
+static void MX_DAC_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -92,52 +101,8 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_SDIO_SD_Init();
-  MX_FATFS_Init();
+  MX_DAC_Init();
   /* USER CODE BEGIN 2 */
-
-  FATFS FatFs;					// File System object structure
-  FIL fil;						// File object structure act upon files in file system
-  FRESULT res;					// Return code for file operations
-  UINT count = 0;				// Counter for
-
-  /* Mount file system on SD card.
-   * &FatFs = FATFS system pointer.
-   * "" = Drive number to mount - is this the name of the SD card?
-   * 0 = delayed mount, 1 = mount immediately
-   */
-  res = f_mount(&FatFs, "XMAS-23", 1);
-  if (res != FR_OK)
-	  return EXIT_FAILURE;
-
-  // Read test
-	  char line[256];
-
-	  res = f_open(&fil, "test.txt", FA_READ);
-	  if (res != FR_OK)
-		  return EXIT_FAILURE;
-
-	  f_read(&fil, line, sizeof(line), &count);
-	  //HAL_UART_Transmit(&huart2, (uint8_t*)line, count, 100);
-
-	  res = f_close(&fil);
-	  if (res != FR_OK)
-	  return EXIT_FAILURE;
-
-  // WRITE TEST
-	res = f_open(&fil, "w_test.txt", FA_CREATE_ALWAYS | FA_WRITE);
-	if (res != FR_OK)
-	  return EXIT_FAILURE;
-
-	f_write(&fil, "Nucleo : SD card write test\n\r", 29, &count);
-
-	res = f_close(&fil);
-	if (res != FR_OK)
-	  return EXIT_FAILURE;
-
-
-
-
 
   /* USER CODE END 2 */
 
@@ -192,30 +157,42 @@ void SystemClock_Config(void)
 }
 
 /**
-  * @brief SDIO Initialization Function
+  * @brief DAC Initialization Function
   * @param None
   * @retval None
   */
-static void MX_SDIO_SD_Init(void)
+static void MX_DAC_Init(void)
 {
 
-  /* USER CODE BEGIN SDIO_Init 0 */
+  /* USER CODE BEGIN DAC_Init 0 */
 
-  /* USER CODE END SDIO_Init 0 */
+  /* USER CODE END DAC_Init 0 */
 
-  /* USER CODE BEGIN SDIO_Init 1 */
+  DAC_ChannelConfTypeDef sConfig = {0};
 
-  /* USER CODE END SDIO_Init 1 */
-  hsd.Instance = SDIO;
-  hsd.Init.ClockEdge = SDIO_CLOCK_EDGE_RISING;
-  hsd.Init.ClockBypass = SDIO_CLOCK_BYPASS_DISABLE;
-  hsd.Init.ClockPowerSave = SDIO_CLOCK_POWER_SAVE_DISABLE;
-  hsd.Init.BusWide = SDIO_BUS_WIDE_4B;
-  hsd.Init.HardwareFlowControl = SDIO_HARDWARE_FLOW_CONTROL_DISABLE;
-  hsd.Init.ClockDiv = 0;
-  /* USER CODE BEGIN SDIO_Init 2 */
+  /* USER CODE BEGIN DAC_Init 1 */
 
-  /* USER CODE END SDIO_Init 2 */
+  /* USER CODE END DAC_Init 1 */
+
+  /** DAC Initialization
+  */
+  hdac.Instance = DAC;
+  if (HAL_DAC_Init(&hdac) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** DAC channel OUT1 config
+  */
+  sConfig.DAC_Trigger = DAC_TRIGGER_NONE;
+  sConfig.DAC_OutputBuffer = DAC_OUTPUTBUFFER_ENABLE;
+  if (HAL_DAC_ConfigChannel(&hdac, &sConfig, DAC_CHANNEL_1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN DAC_Init 2 */
+
+  /* USER CODE END DAC_Init 2 */
 
 }
 
@@ -226,30 +203,12 @@ static void MX_SDIO_SD_Init(void)
   */
 static void MX_GPIO_Init(void)
 {
-  GPIO_InitTypeDef GPIO_InitStruct = {0};
 /* USER CODE BEGIN MX_GPIO_Init_1 */
 /* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOD_CLK_ENABLE();
-  __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(STAT_LED_GPIO_Port, STAT_LED_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin : STAT_LED_Pin */
-  GPIO_InitStruct.Pin = STAT_LED_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(STAT_LED_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : SDIO_CARD_DETECT_Pin */
-  GPIO_InitStruct.Pin = SDIO_CARD_DETECT_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(SDIO_CARD_DETECT_GPIO_Port, &GPIO_InitStruct);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
