@@ -113,7 +113,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    /* USER CODE END WHILE */
+
 	  for (int i = 0; i < (sizeof(Wave_LUT) / sizeof(Wave_LUT[0])); i++) {
 
 		  HAL_DAC_SetValue(&hdac, DAC_CHANNEL_1, DAC_ALIGN_12B_R, Wave_LUT[i]);			// Send array data to DAC
@@ -121,6 +121,7 @@ int main(void)
 
 	  }
 
+    /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
   }
