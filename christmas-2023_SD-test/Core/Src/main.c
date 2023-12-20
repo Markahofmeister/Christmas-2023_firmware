@@ -4,14 +4,9 @@
   * @file           : main.c
   * @brief          : Main program body
   ******************************************************************************
-  * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
+  * Code taken from:
+  * https://github.com/Nunocky/STM32_Nucleo_SDCard_Access/blob/main/CubeIDE%20Project/L476RG_SDCard/Core/Src/main.c
   *
   ******************************************************************************
   */
@@ -22,7 +17,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <string.h>
+#include <stdlib.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -99,6 +95,49 @@ int main(void)
   MX_SDIO_SD_Init();
   MX_FATFS_Init();
   /* USER CODE BEGIN 2 */
+
+  FATFS FatFs;					// File System object structure
+  FIL fil;						// File object structure act upon files in file system
+  FRESULT res;					// Return code for file operations
+  UINT count = 0;				// Counter for
+
+  /* Mount file system on SD card.
+   * &FatFs = FATFS system pointer.
+   * "" = Drive number to mount - is this the name of the SD card?
+   * 0 = delayed mount, 1 = mount immediately
+   */
+  res = f_mount(&FatFs, "XMAS-23", 1);
+  if (res != FR_OK)
+	  return EXIT_FAILURE;
+
+  // Read test
+	  char line[256];
+
+	  res = f_open(&fil, "test.txt", FA_READ);
+	  if (res != FR_OK)
+		  return EXIT_FAILURE;
+
+	  f_read(&fil, line, sizeof(line), &count);
+	  //HAL_UART_Transmit(&huart2, (uint8_t*)line, count, 100);
+
+	  res = f_close(&fil);
+	  if (res != FR_OK)
+	  return EXIT_FAILURE;
+
+  // WRITE TEST
+	res = f_open(&fil, "w_test.txt", FA_CREATE_ALWAYS | FA_WRITE);
+	if (res != FR_OK)
+	  return EXIT_FAILURE;
+
+	f_write(&fil, "Nucleo : SD card write test\r\n", 29, &count);
+
+	res = f_close(&fil);
+	if (res != FR_OK)
+	  return EXIT_FAILURE;
+
+
+
+
 
   /* USER CODE END 2 */
 
