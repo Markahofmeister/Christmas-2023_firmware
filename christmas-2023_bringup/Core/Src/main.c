@@ -44,7 +44,7 @@ ADC_HandleTypeDef hadc1;
  * Change flag to enter sequential stages of bringup *
  *******************************************************************************
  */
-const uint8_t bringupStage = 1;
+
 
 // Debug LED on PCB
 const uint16_t debugLED = GPIO_PIN_5;		// Port C
@@ -123,6 +123,8 @@ int main(void)
   MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
 
+  const uint8_t bringupStage = 4;
+
   // Define return variable for ADC
   uint16_t ADC_Return = 0;
   // Calibrate HAL
@@ -172,7 +174,7 @@ int main(void)
 				HAL_GPIO_WritePin(GPIOB, shiftData, GPIOPinSet[0]);
 
 
-				for(int i = 0; i < 7; i++) {
+				for(int i = 0; i < 8; i++) {
 
 					HAL_Delay(1000);
 					// Shift low bit
@@ -402,60 +404,43 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 
-void HAL_GPIO_EXTI_Falling_Callback(uint16_t GPIO_Pin) {
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 
 	// All buttons trigger the same sequence for now, but this may change later.
 	// GPIO interrupts are enabled in NVIC.
 
 	if(GPIO_Pin == buttonIn_1) {
-		HAL_GPIO_WritePin(GPIOC, debugLED, GPIOPinSet[1]);
-		Hal_Delay(750);
-		HAL_GPIO_WritePin(GPIOC, debugLED, GPIOPinSet[0]);
+//		HAL_GPIO_WritePin(GPIOC, debugLED, GPIOPinSet[1]);
+//		HAL_Delay(750);
+//		HAL_GPIO_WritePin(GPIOC, debugLED, GPIOPinSet[0]);
+		HAL_GPIO_TogglePin(GPIOC, debugLED);
 	}
 	else if(GPIO_Pin == buttonIn_2) {
-		HAL_GPIO_WritePin(GPIOC, debugLED, GPIOPinSet[1]);
-		Hal_Delay(750);
-		HAL_GPIO_WritePin(GPIOC, debugLED, GPIOPinSet[0]);
+		HAL_GPIO_TogglePin(GPIOC, debugLED);
 	}
 	else if(GPIO_Pin == buttonIn_3) {
-		HAL_GPIO_WritePin(GPIOC, debugLED, GPIOPinSet[1]);
-		Hal_Delay(750);
-		HAL_GPIO_WritePin(GPIOC, debugLED, GPIOPinSet[0]);
+		HAL_GPIO_TogglePin(GPIOC, debugLED);
 		}
 	else if(GPIO_Pin == buttonIn_4) {
-		HAL_GPIO_WritePin(GPIOC, debugLED, GPIOPinSet[1]);
-		Hal_Delay(750);
-		HAL_GPIO_WritePin(GPIOC, debugLED, GPIOPinSet[0]);
+		HAL_GPIO_TogglePin(GPIOC, debugLED);
 		}
 	else if(GPIO_Pin == buttonIn_5) {
-		HAL_GPIO_WritePin(GPIOC, debugLED, GPIOPinSet[1]);
-		Hal_Delay(750);
-		HAL_GPIO_WritePin(GPIOC, debugLED, GPIOPinSet[0]);
+		HAL_GPIO_TogglePin(GPIOC, debugLED);
 		}
 	else if(GPIO_Pin == buttonIn_6) {
-		HAL_GPIO_WritePin(GPIOC, debugLED, GPIOPinSet[1]);
-		Hal_Delay(750);
-		HAL_GPIO_WritePin(GPIOC, debugLED, GPIOPinSet[0]);
+		HAL_GPIO_TogglePin(GPIOC, debugLED);
 		}
 	else if(GPIO_Pin == buttonIn_7) {
-		HAL_GPIO_WritePin(GPIOC, debugLED, GPIOPinSet[1]);
-		Hal_Delay(750);
-		HAL_GPIO_WritePin(GPIOC, debugLED, GPIOPinSet[0]);
+		HAL_GPIO_TogglePin(GPIOC, debugLED);
 		}
 	else if(GPIO_Pin == buttonIn_8) {
-		HAL_GPIO_WritePin(GPIOC, debugLED, GPIOPinSet[1]);
-		Hal_Delay(750);
-		HAL_GPIO_WritePin(GPIOC, debugLED, GPIOPinSet[0]);
+		HAL_GPIO_TogglePin(GPIOC, debugLED);
 		}
 	else if(GPIO_Pin == buttonIn_9) {
-		HAL_GPIO_WritePin(GPIOC, debugLED, GPIOPinSet[1]);
-		Hal_Delay(750);
-		HAL_GPIO_WritePin(GPIOC, debugLED, GPIOPinSet[0]);
+		HAL_GPIO_TogglePin(GPIOC, debugLED);
 		}
 	else if(GPIO_Pin == buttonIn_10) {
-		HAL_GPIO_WritePin(GPIOC, debugLED, GPIOPinSet[1]);
-		Hal_Delay(750);
-		HAL_GPIO_WritePin(GPIOC, debugLED, GPIOPinSet[0]);
+		HAL_GPIO_TogglePin(GPIOC, debugLED);
 		}
 
 }

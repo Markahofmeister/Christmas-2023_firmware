@@ -120,7 +120,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    /* USER CODE END WHILE */
+
 	  for (int i = 0; i < (sizeof(Wave_LUT) / sizeof(Wave_LUT[0])); i++) {
  8000242:	2300      	movs	r3, #0
  8000244:	607b      	str	r3, [r7, #4]
