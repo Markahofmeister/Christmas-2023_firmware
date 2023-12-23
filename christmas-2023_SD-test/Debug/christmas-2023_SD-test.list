@@ -7,23 +7,23 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, ALLOC, LOAD, READONLY, DATA
   1 .text         00005b08  080001e4  080001e4  000101e4  2**2
                   CONTENTS, ALLOC, LOAD, READONLY, CODE
-  2 .rodata       00000138  08005cec  08005cec  00015cec  2**2
+  2 .rodata       0000013c  08005cec  08005cec  00015cec  2**2
                   CONTENTS, ALLOC, LOAD, READONLY, DATA
-  3 .ARM.extab    00000000  08005e24  08005e24  0002000c  2**0
+  3 .ARM.extab    00000000  08005e28  08005e28  0002000c  2**0
                   CONTENTS
-  4 .ARM          00000000  08005e24  08005e24  0002000c  2**0
+  4 .ARM          00000000  08005e28  08005e28  0002000c  2**0
                   CONTENTS
-  5 .preinit_array 00000000  08005e24  08005e24  0002000c  2**0
+  5 .preinit_array 00000000  08005e28  08005e28  0002000c  2**0
                   CONTENTS, ALLOC, LOAD, DATA
-  6 .init_array   00000004  08005e24  08005e24  00015e24  2**2
+  6 .init_array   00000004  08005e28  08005e28  00015e28  2**2
                   CONTENTS, ALLOC, LOAD, DATA
-  7 .fini_array   00000004  08005e28  08005e28  00015e28  2**2
+  7 .fini_array   00000004  08005e2c  08005e2c  00015e2c  2**2
                   CONTENTS, ALLOC, LOAD, DATA
-  8 .data         0000000c  20000000  08005e2c  00020000  2**2
+  8 .data         0000000c  20000000  08005e30  00020000  2**2
                   CONTENTS, ALLOC, LOAD, DATA
-  9 .bss          000000d8  2000000c  08005e38  0002000c  2**2
+  9 .bss          000000d8  2000000c  08005e3c  0002000c  2**2
                   ALLOC
- 10 ._user_heap_stack 00000604  200000e4  08005e38  000200e4  2**0
+ 10 ._user_heap_stack 00000604  200000e4  08005e3c  000200e4  2**0
                   ALLOC
  11 .ARM.attributes 00000029  00000000  00000000  0002000c  2**0
                   CONTENTS, READONLY
@@ -126,7 +126,7 @@ int main(void)
    * 0 = delayed mount, 1 = mount immediately
    * It seems that not delaying the mount returns a "not ready" message. Not sure if this is how it's supposed to be.
    */
-  res = f_mount(&FatFs, "", 1);
+  res = f_mount(&FatFs, "XMAS-23", 1);
  800024c:	f507 734d 	add.w	r3, r7, #820	; 0x334
  8000250:	2201      	movs	r2, #1
  8000252:	4930      	ldr	r1, [pc, #192]	; (8000314 <main+0xf0>)
@@ -244,9 +244,9 @@ int main(void)
  8000310:	bd80      	pop	{r7, pc}
  8000312:	bf00      	nop
  8000314:	08005cec 	.word	0x08005cec
- 8000318:	08005cf0 	.word	0x08005cf0
- 800031c:	08005cfc 	.word	0x08005cfc
- 8000320:	08005d08 	.word	0x08005d08
+ 8000318:	08005cf4 	.word	0x08005cf4
+ 800031c:	08005d00 	.word	0x08005d00
+ 8000320:	08005d0c 	.word	0x08005d0c
 
 08000324 <SystemClock_Config>:
 /**
@@ -989,7 +989,7 @@ LoopFillZerobss:
   ldr r1, =_edata
  8000670:	2000000c 	.word	0x2000000c
   ldr r2, =_sidata
- 8000674:	08005e2c 	.word	0x08005e2c
+ 8000674:	08005e30 	.word	0x08005e30
   ldr r2, =_sbss
  8000678:	2000000c 	.word	0x2000000c
   ldr r4, =_ebss
@@ -3355,7 +3355,7 @@ if (((RCC_ClkInitStruct->ClockType) & RCC_CLOCKTYPE_PCLK1) == RCC_CLOCKTYPE_PCLK
  80013a2:	bf00      	nop
  80013a4:	40022000 	.word	0x40022000
  80013a8:	40021000 	.word	0x40021000
- 80013ac:	08005d6c 	.word	0x08005d6c
+ 80013ac:	08005d70 	.word	0x08005d70
  80013b0:	20000000 	.word	0x20000000
  80013b4:	20000004 	.word	0x20000004
 
@@ -3490,8 +3490,8 @@ uint32_t HAL_RCC_GetSysClockFreq(void)
  800144a:	bf00      	nop
  800144c:	40021000 	.word	0x40021000
  8001450:	00b71b00 	.word	0x00b71b00
- 8001454:	08005d7c 	.word	0x08005d7c
- 8001458:	08005d8c 	.word	0x08005d8c
+ 8001454:	08005d80 	.word	0x08005d80
+ 8001458:	08005d90 	.word	0x08005d90
  800145c:	003d0900 	.word	0x003d0900
  8001460:	007a1200 	.word	0x007a1200
 
@@ -8188,7 +8188,7 @@ void MX_FATFS_Init(void)
  8002e0c:	bf00      	nop
  8002e0e:	bd80      	pop	{r7, pc}
  8002e10:	200000b4 	.word	0x200000b4
- 8002e14:	08005e10 	.word	0x08005e10
+ 8002e14:	08005e14 	.word	0x08005e14
  8002e18:	200000b0 	.word	0x200000b0
 
 08002e1c <get_fattime>:
@@ -8437,28 +8437,29 @@ uint8_t	BSP_PlatformIsDetected(void) {
  8002f3c:	71fb      	strb	r3, [r7, #7]
     /* Check SD card detect pin */
     if(HAL_GPIO_ReadPin(SD_DETECT_GPIO_PORT, SD_DETECT_PIN) != GPIO_PIN_RESET)
- 8002f3e:	f44f 7180 	mov.w	r1, #256	; 0x100
- 8002f42:	4806      	ldr	r0, [pc, #24]	; (8002f5c <BSP_PlatformIsDetected+0x28>)
- 8002f44:	f7fd fe9c 	bl	8000c80 <HAL_GPIO_ReadPin>
- 8002f48:	4603      	mov	r3, r0
- 8002f4a:	2b00      	cmp	r3, #0
- 8002f4c:	d001      	beq.n	8002f52 <BSP_PlatformIsDetected+0x1e>
+ 8002f3e:	2180      	movs	r1, #128	; 0x80
+ 8002f40:	4806      	ldr	r0, [pc, #24]	; (8002f5c <BSP_PlatformIsDetected+0x28>)
+ 8002f42:	f7fd fe9d 	bl	8000c80 <HAL_GPIO_ReadPin>
+ 8002f46:	4603      	mov	r3, r0
+ 8002f48:	2b00      	cmp	r3, #0
+ 8002f4a:	d001      	beq.n	8002f50 <BSP_PlatformIsDetected+0x1c>
     {
         status = SD_NOT_PRESENT;
- 8002f4e:	2300      	movs	r3, #0
- 8002f50:	71fb      	strb	r3, [r7, #7]
+ 8002f4c:	2300      	movs	r3, #0
+ 8002f4e:	71fb      	strb	r3, [r7, #7]
     }
     /* USER CODE BEGIN 1 */
     /* user code can be inserted here */
     /* USER CODE END 1 */
     return status;
- 8002f52:	79fb      	ldrb	r3, [r7, #7]
+ 8002f50:	79fb      	ldrb	r3, [r7, #7]
 }
- 8002f54:	4618      	mov	r0, r3
- 8002f56:	3708      	adds	r7, #8
- 8002f58:	46bd      	mov	sp, r7
- 8002f5a:	bd80      	pop	{r7, pc}
- 8002f5c:	40010800 	.word	0x40010800
+ 8002f52:	4618      	mov	r0, r3
+ 8002f54:	3708      	adds	r7, #8
+ 8002f56:	46bd      	mov	sp, r7
+ 8002f58:	bd80      	pop	{r7, pc}
+ 8002f5a:	bf00      	nop
+ 8002f5c:	40011000 	.word	0x40011000
 
 08002f60 <disk_status>:
   * @retval DSTATUS: Operation status
@@ -11717,8 +11718,8 @@ FRESULT create_name (
  8004436:	3720      	adds	r7, #32
  8004438:	46bd      	mov	sp, r7
  800443a:	bd80      	pop	{r7, pc}
- 800443c:	08005d90 	.word	0x08005d90
- 8004440:	08005d28 	.word	0x08005d28
+ 800443c:	08005d94 	.word	0x08005d94
+ 8004440:	08005d2c 	.word	0x08005d2c
 
 08004444 <follow_path>:
 static
@@ -15137,10 +15138,10 @@ DRESULT SD_ioctl(BYTE lun, BYTE cmd, void *buff)
  8005cae:	4798      	blx	r3
  8005cb0:	3601      	adds	r6, #1
  8005cb2:	e7f2      	b.n	8005c9a <__libc_init_array+0x1e>
- 8005cb4:	08005e24 	.word	0x08005e24
- 8005cb8:	08005e24 	.word	0x08005e24
- 8005cbc:	08005e24 	.word	0x08005e24
- 8005cc0:	08005e28 	.word	0x08005e28
+ 8005cb4:	08005e28 	.word	0x08005e28
+ 8005cb8:	08005e28 	.word	0x08005e28
+ 8005cbc:	08005e28 	.word	0x08005e28
+ 8005cc0:	08005e2c 	.word	0x08005e2c
 
 08005cc4 <memset>:
  8005cc4:	4603      	mov	r3, r0

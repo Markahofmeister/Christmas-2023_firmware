@@ -109,7 +109,7 @@ int main(void)
    * 0 = delayed mount, 1 = mount immediately
    * It seems that not delaying the mount returns a "not ready" message. Not sure if this is how it's supposed to be.
    */
-  res = f_mount(&FatFs, "", 1);
+  res = f_mount(&FatFs, "XMAS-23", 1);
   if (res != FR_OK)
 	  return EXIT_FAILURE;
 
