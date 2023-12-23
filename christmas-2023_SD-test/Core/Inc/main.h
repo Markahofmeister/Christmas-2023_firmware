@@ -61,6 +61,8 @@ void Error_Handler(void);
 #define STAT_LED_GPIO_Port GPIOC
 #define SDIO_CARD_DETECT_Pin GPIO_PIN_7
 #define SDIO_CARD_DETECT_GPIO_Port GPIOC
+#define SDIO_CD_FAKE_Pin GPIO_PIN_8
+#define SDIO_CD_FAKE_GPIO_Port GPIOA
 
 /* USER CODE BEGIN Private defines */
 

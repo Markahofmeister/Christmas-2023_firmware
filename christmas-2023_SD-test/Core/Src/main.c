@@ -96,6 +96,8 @@ int main(void)
   MX_FATFS_Init();
   /* USER CODE BEGIN 2 */
 
+  //HAL_Delay(1000);
+
   FATFS FatFs;					// File System object structure
   FIL fil;						// File object structure act upon files in file system
   FRESULT res;					// Return code for file operations
@@ -105,9 +107,9 @@ int main(void)
    * &FatFs = FATFS system pointer.
    * "" = Drive number to mount - is this the name of the SD card?
    * 0 = delayed mount, 1 = mount immediately
-   * It seems that not delaying the mount returns a "not ready" message.
+   * It seems that not delaying the mount returns a "not ready" message. Not sure if this is how it's supposed to be.
    */
-  res = f_mount(&FatFs, "XMAS-23", 0);
+  res = f_mount(&FatFs, "", 1);
   if (res != FR_OK)
 	  return EXIT_FAILURE;
 
@@ -115,7 +117,7 @@ int main(void)
 	  char line[256];							// Variable to store reading in of line
 
 	  res = f_open(&fil, "test.txt", FA_READ);	// Open *.txt file in read mode using pointer to file object structure.
-	  HAL_Delay(100);
+	  //HAL_Delay(1000);
 	  if (res != FR_OK)
 		  return EXIT_FAILURE;
 
@@ -218,9 +220,9 @@ static void MX_SDIO_SD_Init(void)
   hsd.Init.ClockEdge = SDIO_CLOCK_EDGE_RISING;
   hsd.Init.ClockBypass = SDIO_CLOCK_BYPASS_DISABLE;
   hsd.Init.ClockPowerSave = SDIO_CLOCK_POWER_SAVE_DISABLE;
-  hsd.Init.BusWide = SDIO_BUS_WIDE_4B;
+  hsd.Init.BusWide = SDIO_BUS_WIDE_1B;
   hsd.Init.HardwareFlowControl = SDIO_HARDWARE_FLOW_CONTROL_DISABLE;
-  hsd.Init.ClockDiv = 0;
+  hsd.Init.ClockDiv = 4;
   /* USER CODE BEGIN SDIO_Init 2 */
 
   /* USER CODE END SDIO_Init 2 */
@@ -258,6 +260,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(SDIO_CARD_DETECT_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : SDIO_CD_FAKE_Pin */
+  GPIO_InitStruct.Pin = SDIO_CD_FAKE_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(SDIO_CD_FAKE_GPIO_Port, &GPIO_InitStruct);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
