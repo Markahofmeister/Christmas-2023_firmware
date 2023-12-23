@@ -355,11 +355,17 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOB, SHIFT_OE_Pin|SHIFT_DATA_Pin|SHIFT_DATA_CLK_Pin|SHIFT_STORE_CLK_Pin
                           |SHIFT_MCLR_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : BUTTON_1_Pin BUTTON_5_Pin */
-  GPIO_InitStruct.Pin = BUTTON_1_Pin|BUTTON_5_Pin;
+  /*Configure GPIO pins : BUTTON_1_Pin BUTTON_3_Pin BUTTON_4_Pin BUTTON_5_Pin */
+  GPIO_InitStruct.Pin = BUTTON_1_Pin|BUTTON_3_Pin|BUTTON_4_Pin|BUTTON_5_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : BUTTON_2_Pin */
+  GPIO_InitStruct.Pin = BUTTON_2_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(BUTTON_2_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : STAT_LED_Pin */
   GPIO_InitStruct.Pin = STAT_LED_Pin;
@@ -377,10 +383,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : BUTTON_10_Pin BUTTON_9_Pin BUTTON_8_Pin BUTTON_7_Pin
-                           BUTTON_6_Pin */
-  GPIO_InitStruct.Pin = BUTTON_10_Pin|BUTTON_9_Pin|BUTTON_8_Pin|BUTTON_7_Pin
-                          |BUTTON_6_Pin;
+  /*Configure GPIO pins : BUTTON_10_Pin BUTTON_8_Pin */
+  GPIO_InitStruct.Pin = BUTTON_10_Pin|BUTTON_8_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
