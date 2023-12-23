@@ -105,18 +105,26 @@ int main(void)
    * &FatFs = FATFS system pointer.
    * "" = Drive number to mount - is this the name of the SD card?
    * 0 = delayed mount, 1 = mount immediately
+   * It seems that not delaying the mount returns a "not ready" message.
    */
-  res = f_mount(&FatFs, "XMAS-23", 1);
+  res = f_mount(&FatFs, "XMAS-23", 0);
   if (res != FR_OK)
 	  return EXIT_FAILURE;
 
   // Read test
-	  char line[256];
+	  char line[256];							// Variable to store reading in of line
 
-	  res = f_open(&fil, "test.txt", FA_READ);
+	  res = f_open(&fil, "test.txt", FA_READ);	// Open *.txt file in read mode using pointer to file object structure.
+	  HAL_Delay(100);
 	  if (res != FR_OK)
 		  return EXIT_FAILURE;
 
+	  /*
+	   * Read first line of file using pointer to file object structure.
+	   * Records in data buffer named line
+	   * Reads number of bytes in line
+	   * count is a bytes read counter
+	   */
 	  f_read(&fil, line, sizeof(line), &count);
 	  //HAL_UART_Transmit(&huart2, (uint8_t*)line, count, 100);
 
