@@ -710,9 +710,9 @@ void HAL_DAC_MspInit(DAC_HandleTypeDef* hdac)
  8000568:	4b11      	ldr	r3, [pc, #68]	; (80005b0 <HAL_DAC_MspInit+0xcc>)
  800056a:	f44f 6280 	mov.w	r2, #1024	; 0x400
  800056e:	615a      	str	r2, [r3, #20]
-    hdma_dac_ch1.Init.Mode = DMA_CIRCULAR;
+    hdma_dac_ch1.Init.Mode = DMA_NORMAL;
  8000570:	4b0f      	ldr	r3, [pc, #60]	; (80005b0 <HAL_DAC_MspInit+0xcc>)
- 8000572:	2220      	movs	r2, #32
+ 8000572:	2200      	movs	r2, #0
  8000574:	619a      	str	r2, [r3, #24]
     hdma_dac_ch1.Init.Priority = DMA_PRIORITY_HIGH;
  8000576:	4b0e      	ldr	r3, [pc, #56]	; (80005b0 <HAL_DAC_MspInit+0xcc>)
