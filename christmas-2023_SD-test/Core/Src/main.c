@@ -110,6 +110,7 @@ int main(void)
    * It seems that not delaying the mount returns a "not ready" message. Not sure if this is how it's supposed to be.
    */
   res = f_mount(&FatFs, "XMAS-23", 1);
+  //HAL_Delay(1000);
   if (res != FR_OK)
 	  return EXIT_FAILURE;
 
@@ -117,7 +118,7 @@ int main(void)
 	  char line[256];							// Variable to store reading in of line
 
 	  res = f_open(&fil, "test.txt", FA_READ);	// Open *.txt file in read mode using pointer to file object structure.
-	  //HAL_Delay(1000);
+	  HAL_Delay(1000);
 	  if (res != FR_OK)
 		  return EXIT_FAILURE;
 
@@ -222,7 +223,7 @@ static void MX_SDIO_SD_Init(void)
   hsd.Init.ClockPowerSave = SDIO_CLOCK_POWER_SAVE_DISABLE;
   hsd.Init.BusWide = SDIO_BUS_WIDE_1B;
   hsd.Init.HardwareFlowControl = SDIO_HARDWARE_FLOW_CONTROL_DISABLE;
-  hsd.Init.ClockDiv = 4;
+  hsd.Init.ClockDiv = 3;
   /* USER CODE BEGIN SDIO_Init 2 */
 
   /* USER CODE END SDIO_Init 2 */
