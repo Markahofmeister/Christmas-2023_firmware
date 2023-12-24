@@ -43,6 +43,9 @@
 
 /* Private variables ---------------------------------------------------------*/
 DAC_HandleTypeDef hdac;
+DMA_HandleTypeDef hdma_dac_ch1;
+
+TIM_HandleTypeDef htim4;
 
 /* USER CODE BEGIN PV */
 
@@ -63,7 +66,9 @@ uint32_t Wave_LUT[NUM_SAMP] = {
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_DMA_Init(void);
 static void MX_DAC_Init(void);
+static void MX_TIM4_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -101,11 +106,20 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_DAC_Init();
+  MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
+
+  // Start timer for interrupts
+  HAL_TIM_Base_Start(&htim4);
 
   // Start up DAC
   HAL_DAC_Start(&hdac, DAC_CHANNEL_1);
+
+  // Start up DAC DMA
+  uint32_t waveSize = sizeof(Wave_LUT) / (sizeof(Wave_LUT[1]));
+  HAL_DAC_Start_DMA(&hdac, DAC_CHANNEL_1, (uint32_t*)Wave_LUT, waveSize, DAC_ALIGN_12B_R);
 
   /* USER CODE END 2 */
 
@@ -114,17 +128,29 @@ int main(void)
   while (1)
   {
 
-	  for (int i = 0; i < (sizeof(Wave_LUT) / sizeof(Wave_LUT[0])); i++) {
-
-		  HAL_DAC_SetValue(&hdac, DAC_CHANNEL_1, DAC_ALIGN_12B_R, Wave_LUT[i]);			// Send array data to DAC
-		  HAL_Delay(1);		// Humans will be able to hear a 1 kHz sine wave. This isn't exact, but should work.
-
-	  }
+	  HAL_Delay(1);
 
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
   }
+
+
+  //	  for (int i = 0; i < (sizeof(Wave_LUT) / sizeof(Wave_LUT[0])); i++) {
+  //
+  //		  HAL_DAC_SetValue(&hdac, DAC_CHANNEL_1, DAC_ALIGN_12B_R, Wave_LUT[i]);			// Send array data to DAC
+  //		  HAL_Delay(1);		// Humans will be able to hear a 1 kHz sine wave. This isn't exact, but should work.
+
+  //		  if(__HAL_TIM_GET_COUNTER(timerDelay) - timerVal >= (65536 / 2)) {
+  //
+  //				sevSeg_setIntensity (timerPWM, sevSeg_intensityDuty[displayBlink]);		// Initialize to whatever duty cycle
+  //
+  //				timerVal = __HAL_TIM_GET_COUNTER(timerDelay);
+  //				displayBlink = !displayBlink;
+  //
+  //			}
+
+  //	  }
   /* USER CODE END 3 */
 }
 
@@ -195,7 +221,7 @@ static void MX_DAC_Init(void)
 
   /** DAC channel OUT1 config
   */
-  sConfig.DAC_Trigger = DAC_TRIGGER_NONE;
+  sConfig.DAC_Trigger = DAC_TRIGGER_T4_TRGO;
   sConfig.DAC_OutputBuffer = DAC_OUTPUTBUFFER_ENABLE;
   if (HAL_DAC_ConfigChannel(&hdac, &sConfig, DAC_CHANNEL_1) != HAL_OK)
   {
@@ -204,6 +230,67 @@ static void MX_DAC_Init(void)
   /* USER CODE BEGIN DAC_Init 2 */
 
   /* USER CODE END DAC_Init 2 */
+
+}
+
+/**
+  * @brief TIM4 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM4_Init(void)
+{
+
+  /* USER CODE BEGIN TIM4_Init 0 */
+
+  /* USER CODE END TIM4_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM4_Init 1 */
+
+  /* USER CODE END TIM4_Init 1 */
+  htim4.Instance = TIM4;
+  htim4.Init.Prescaler = 0;
+  htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim4.Init.Period = 1633;
+  htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim4.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim4) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim4, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim4, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM4_Init 2 */
+
+  /* USER CODE END TIM4_Init 2 */
+
+}
+
+/**
+  * Enable DMA controller clock
+  */
+static void MX_DMA_Init(void)
+{
+
+  /* DMA controller clock enable */
+  __HAL_RCC_DMA2_CLK_ENABLE();
+
+  /* DMA interrupt init */
+  /* DMA2_Channel3_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA2_Channel3_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA2_Channel3_IRQn);
 
 }
 
