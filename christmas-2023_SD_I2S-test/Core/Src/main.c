@@ -232,6 +232,7 @@ int playWavFile(const char* fname) {
 }
 
 int playWavFile_Me(const char* fname) {
+
 	FIL file;
 	FRESULT res = f_open(&file, fname, FA_READ);
 	if(res != FR_OK) {
@@ -315,8 +316,11 @@ int playWavFile_Me(const char* fname) {
 	 HAL_StatusTypeDef hal_res;
 	 int nsamples = sizeof(signal_buff) / sizeof(signal_buff[0]);
 
+	 uint32_t filePointerOffsetCount = 0;
+
 	while(1) {
-		res = f_read(&file, (uint16_t*)signal_buff, sizeof(signal_buff) / 16, &bytesRead);
+		res = f_lseek(&file, ((sizeof(signal_buff) / 16) * filePointerOffsetCount) + 45);
+		res = f_read(&file, (uint8_t*)signal_buff, sizeof(signal_buff) / 16, &bytesRead);
 		if(res != FR_OK) {
 			//UART_Printf("f_read() failed, res = %d\r\n", res);
 			f_close(&file);
@@ -330,6 +334,10 @@ int playWavFile_Me(const char* fname) {
 			f_close(&file);
 			return EXIT_FAILURE;
 		}
+
+		filePointerOffsetCount++;
+
+		//HAL_Delay(1000);
 
 	}
 
@@ -424,7 +432,7 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL4;
+  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL2;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     Error_Handler();
@@ -439,7 +447,7 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
   {
     Error_Handler();
   }

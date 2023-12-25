@@ -1,9 +1,9 @@
 ../Core/Src/main.c:82:6:HAL_I2S_TxCpltCallback	24	static
 ../Core/Src/main.c:95:5:playWavFile	664	static
 ../Core/Src/main.c:234:5:playWavFile_Me	33432	static
-../Core/Src/main.c:345:5:main	272	static
-../Core/Src/main.c:412:6:SystemClock_Config	96	static
-../Core/Src/main.c:459:13:MX_I2S2_Init	8	static
-../Core/Src/main.c:491:13:MX_SDIO_SD_Init	4	static
-../Core/Src/main.c:519:13:MX_GPIO_Init	40	static
-../Core/Src/main.c:575:6:Error_Handler	4	static,ignoring_inline_asm
+../Core/Src/main.c:353:5:main	272	static
+../Core/Src/main.c:420:6:SystemClock_Config	96	static
+../Core/Src/main.c:467:13:MX_I2S2_Init	8	static
+../Core/Src/main.c:499:13:MX_SDIO_SD_Init	4	static
+../Core/Src/main.c:527:13:MX_GPIO_Init	40	static
+../Core/Src/main.c:583:6:Error_Handler	4	static,ignoring_inline_asm
