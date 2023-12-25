@@ -231,6 +231,111 @@ int playWavFile(const char* fname) {
     return 0;
 }
 
+int playWavFile_Me(const char* fname) {
+	FIL file;
+	FRESULT res = f_open(&file, fname, FA_READ);
+	if(res != FR_OK) {
+		return EXIT_FAILURE;
+	}
+
+	unsigned int bytesRead;
+	uint8_t header[44];
+	res = f_read(&file, header, sizeof(header), &bytesRead);
+	if(res != FR_OK) {
+		f_close(&file);
+		return EXIT_FAILURE;
+	}
+
+	if(memcmp((const char*)header, "RIFF", 4) != 0) {
+		f_close(&file);
+		return EXIT_FAILURE;
+	}
+
+	if(memcmp((const char*)header + 8, "WAVEfmt ", 8) != 0) {
+		f_close(&file);
+		return EXIT_FAILURE;
+	}
+
+	if(memcmp((const char*)header + 36, "data", 4) != 0) {
+		f_close(&file);
+		return EXIT_FAILURE;
+	}
+
+	uint32_t fileSize = 8 + (header[4] | (header[5] << 8) | (header[6] << 16) | (header[7] << 24));
+	uint32_t headerSizeLeft = header[16] | (header[17] << 8) | (header[18] << 16) | (header[19] << 24);
+	uint16_t compression = header[20] | (header[21] << 8);
+	uint16_t channelsNum = header[22] | (header[23] << 8);
+	uint32_t sampleRate = header[24] | (header[25] << 8) | (header[26] << 16) | (header[27] << 24);
+	uint32_t bytesPerSecond = header[28] | (header[29] << 8) | (header[30] << 16) | (header[31] << 24);
+	uint16_t bytesPerSample = header[32] | (header[33] << 8);
+	uint16_t bitsPerSamplePerChannel = header[34] | (header[35] << 8);
+	uint32_t dataSize = header[40] | (header[41] << 8) | (header[42] << 16) | (header[43] << 24);
+
+//    UART_Printf(
+//        "--- WAV header ---\r\n"
+//        "File size: %lu\r\n"
+//        "Header size left: %lu\r\n"
+//        "Compression (1 = no compression): %d\r\n"
+//        "Channels num: %d\r\n"
+//        "Sample rate: %ld\r\n"
+//        "Bytes per second: %ld\r\n"
+//        "Bytes per sample: %d\r\n"
+//        "Bits per sample per channel: %d\r\n"
+//        "Data size: %ld\r\n"
+//        "------------------\r\n",
+//        fileSize, headerSizeLeft, compression, channelsNum, sampleRate, bytesPerSecond, bytesPerSample,
+//        bitsPerSamplePerChannel, dataSize);
+
+	if(headerSizeLeft != 16) {
+		//UART_Printf("Wrong `headerSizeLeft` value, 16 expected\r\n");
+		f_close(&file);
+		return EXIT_FAILURE;
+	}
+
+	if(compression != 1) {
+		//UART_Printf("Wrong `compression` value, 1 expected\r\n");
+		f_close(&file);
+		return EXIT_FAILURE;
+	}
+
+	if(channelsNum != 1) {
+		//UART_Printf("Wrong `channelsNum` value, 1 expected\r\n");
+		f_close(&file);
+		return EXIT_FAILURE;
+	}
+
+	if((sampleRate != 44100) || (bytesPerSample != 4) || (bitsPerSamplePerChannel != 16) || (bytesPerSecond != 44100*2*2)
+	   || (dataSize < sizeof(signal_buff1) + sizeof(signal_buff2))) {
+		//UART_Printf("Wrong file format, 16 bit file with sample rate 44100 expected\r\n");
+		//f_close(&file);
+		//return EXIT_FAILURE;
+	}
+
+	volatile uint16_t signal_buff[16384];
+	 HAL_StatusTypeDef hal_res;
+	 int nsamples = sizeof(signal_buff) / sizeof(signal_buff[0]);
+
+	while(1) {
+		res = f_read(&file, (uint16_t*)signal_buff, sizeof(signal_buff) / 16, &bytesRead);
+		if(res != FR_OK) {
+			//UART_Printf("f_read() failed, res = %d\r\n", res);
+			f_close(&file);
+			return EXIT_FAILURE;
+		}
+
+
+		hal_res = HAL_I2S_Transmit(&hi2s2, (uint16_t*)signal_buff, nsamples, 1000);
+		if(hal_res != HAL_OK) {
+			//UART_Printf("I2S - HAL_I2S_Transmit failed, hal_res = %d!\r\n", hal_res);
+			f_close(&file);
+			return EXIT_FAILURE;
+		}
+
+	}
+
+
+}
+
 /* USER CODE END 0 */
 
 /**
@@ -275,11 +380,21 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  uint16_t data[4] = {0x2c4d, 0xffff, 0xf321, 0x5432};
+  uint16_t data[128] = {2048, 2149, 2250, 2350, 2450, 2549, 2646, 2742, 2837, 2929, 3020, 3108, 3193, 3275, 3355,
+		    3431, 3504, 3574, 3639, 3701, 3759, 3812, 3861, 3906, 3946, 3982, 4013, 4039, 4060, 4076,
+		    4087, 4094, 4095, 4091, 4082, 4069, 4050, 4026, 3998, 3965, 3927, 3884, 3837, 3786, 3730,
+		    3671, 3607, 3539, 3468, 3394, 3316, 3235, 3151, 3064, 2975, 2883, 2790, 2695, 2598, 2500,
+		    2400, 2300, 2199, 2098, 1997, 1896, 1795, 1695, 1595, 1497, 1400, 1305, 1212, 1120, 1031,
+		    944, 860, 779, 701, 627, 556, 488, 424, 365, 309, 258, 211, 168, 130, 97,
+		    69, 45, 26, 13, 4, 0, 1, 8, 19, 35, 56, 82, 113, 149, 189,
+		    234, 283, 336, 394, 456, 521, 591, 664, 740, 820, 902, 987, 1075, 1166, 1258,
+		    1353, 1449, 1546, 1645, 1745, 1845, 1946, 2047};
 
   while (1)
   {
-	  HAL_StatusTypeDef tx = HAL_I2S_Transmit(&hi2s2, (uint16_t*)data, sizeof(data)/sizeof(data[0]), 100);
+	  //HAL_StatusTypeDef tx = HAL_I2S_Transmit(&hi2s2, (uint16_t*)data, sizeof(data)/sizeof(data[0]), 1000);
+
+	  playWavFile_Me("can.wav");
 
 //	  playWavFile("can.wav");
 //	  HAL_Delay(5000);
@@ -309,7 +424,7 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL3;
+  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL4;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     Error_Handler();
