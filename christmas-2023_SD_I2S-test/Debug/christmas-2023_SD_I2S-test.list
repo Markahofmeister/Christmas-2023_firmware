@@ -222,8 +222,8 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
  80002da:	f44f 3380 	mov.w	r3, #65536	; 0x10000
  80002de:	653b      	str	r3, [r7, #80]	; 0x50
-  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL6;
- 80002e0:	f44f 1380 	mov.w	r3, #1048576	; 0x100000
+  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL3;
+ 80002e0:	f44f 2380 	mov.w	r3, #262144	; 0x40000
  80002e4:	657b      	str	r3, [r7, #84]	; 0x54
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
  80002e6:	f107 0330 	add.w	r3, r7, #48	; 0x30
@@ -256,9 +256,9 @@ void SystemClock_Config(void)
  800030c:	2300      	movs	r3, #0
  800030e:	62fb      	str	r3, [r7, #44]	; 0x2c
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
  8000310:	f107 031c 	add.w	r3, r7, #28
- 8000314:	2102      	movs	r1, #2
+ 8000314:	2101      	movs	r1, #1
  8000316:	4618      	mov	r0, r3
  8000318:	f001 f9c8 	bl	80016ac <HAL_RCC_ClockConfig>
  800031c:	4603      	mov	r3, r0
