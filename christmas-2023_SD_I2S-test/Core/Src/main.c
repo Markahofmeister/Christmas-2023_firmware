@@ -524,24 +524,31 @@ int main(void)
   /* USER CODE BEGIN WHILE */
 
 
+  FRESULT res = f_mount(&fs, "XMAS-23", 1);
+   if(res != FR_OK) {
+	   return EXIT_FAILURE;
+   }
 
   while (1)
   {
 
-	  FRESULT res = f_mount(&fs, "XMAS-23", 1);
-	   if(res != FR_OK) {
-		   return EXIT_FAILURE;
-	   }
 
 	  playWavFile("canS.wav");
-	  MX_I2S2_Init();
-
-	  //playWavFile("1k.wav");
-
-	  res = f_mount(0, "XMAS-23", 0);
-	  if(res != FR_OK) {
-		   return EXIT_FAILURE;
+	  if (HAL_I2S_Init(&hi2s2) != HAL_OK)
+	   {
+	     Error_Handler();
 	   }
+
+//	  playWavFile("1k.wav");
+//	  if (HAL_I2S_Init(&hi2s2) != HAL_OK)
+//	   {
+//	     Error_Handler();
+//	   }
+
+//	  res = f_mount(0, "XMAS-23", 0);
+//	  if(res != FR_OK) {
+//		   return EXIT_FAILURE;
+//	   }
 
     /* USER CODE END WHILE */
 
