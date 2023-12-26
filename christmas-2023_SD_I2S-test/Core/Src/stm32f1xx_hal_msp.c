@@ -23,6 +23,9 @@
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
+extern DMA_HandleTypeDef hdma_spi2_tx;
+
+extern DMA_HandleTypeDef hdma_sdio;
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN TD */
@@ -108,6 +111,26 @@ void HAL_I2S_MspInit(I2S_HandleTypeDef* hi2s)
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
+    /* I2S2 DMA Init */
+    /* SPI2_TX Init */
+    hdma_spi2_tx.Instance = DMA1_Channel5;
+    hdma_spi2_tx.Init.Direction = DMA_MEMORY_TO_PERIPH;
+    hdma_spi2_tx.Init.PeriphInc = DMA_PINC_DISABLE;
+    hdma_spi2_tx.Init.MemInc = DMA_MINC_ENABLE;
+    hdma_spi2_tx.Init.PeriphDataAlignment = DMA_PDATAALIGN_HALFWORD;
+    hdma_spi2_tx.Init.MemDataAlignment = DMA_MDATAALIGN_HALFWORD;
+    hdma_spi2_tx.Init.Mode = DMA_NORMAL;
+    hdma_spi2_tx.Init.Priority = DMA_PRIORITY_HIGH;
+    if (HAL_DMA_Init(&hdma_spi2_tx) != HAL_OK)
+    {
+      Error_Handler();
+    }
+
+    __HAL_LINKDMA(hi2s,hdmatx,hdma_spi2_tx);
+
+    /* I2S2 interrupt Init */
+    HAL_NVIC_SetPriority(SPI2_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(SPI2_IRQn);
   /* USER CODE BEGIN SPI2_MspInit 1 */
 
   /* USER CODE END SPI2_MspInit 1 */
@@ -138,6 +161,11 @@ void HAL_I2S_MspDeInit(I2S_HandleTypeDef* hi2s)
     */
     HAL_GPIO_DeInit(GPIOB, GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_15);
 
+    /* I2S2 DMA DeInit */
+    HAL_DMA_DeInit(hi2s->hdmatx);
+
+    /* I2S2 interrupt DeInit */
+    HAL_NVIC_DisableIRQ(SPI2_IRQn);
   /* USER CODE BEGIN SPI2_MspDeInit 1 */
 
   /* USER CODE END SPI2_MspDeInit 1 */
@@ -179,6 +207,28 @@ void HAL_SD_MspInit(SD_HandleTypeDef* hsd)
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
     HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
+    /* SDIO DMA Init */
+    /* SDIO Init */
+    hdma_sdio.Instance = DMA2_Channel4;
+    hdma_sdio.Init.Direction = DMA_PERIPH_TO_MEMORY;
+    hdma_sdio.Init.PeriphInc = DMA_PINC_DISABLE;
+    hdma_sdio.Init.MemInc = DMA_MINC_ENABLE;
+    hdma_sdio.Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
+    hdma_sdio.Init.MemDataAlignment = DMA_MDATAALIGN_HALFWORD;
+    hdma_sdio.Init.Mode = DMA_NORMAL;
+    hdma_sdio.Init.Priority = DMA_PRIORITY_HIGH;
+    if (HAL_DMA_Init(&hdma_sdio) != HAL_OK)
+    {
+      Error_Handler();
+    }
+
+    /* Several peripheral DMA handle pointers point to the same DMA handle.
+     Be aware that there is only one channel to perform all the requested DMAs. */
+    /* Be sure to change transfer direction before calling
+     HAL_SD_ReadBlocks_DMA or HAL_SD_WriteBlocks_DMA. */
+    __HAL_LINKDMA(hsd,hdmarx,hdma_sdio);
+    __HAL_LINKDMA(hsd,hdmatx,hdma_sdio);
+
   /* USER CODE BEGIN SDIO_MspInit 1 */
 
   /* USER CODE END SDIO_MspInit 1 */
@@ -211,6 +261,9 @@ void HAL_SD_MspDeInit(SD_HandleTypeDef* hsd)
 
     HAL_GPIO_DeInit(GPIOD, GPIO_PIN_2);
 
+    /* SDIO DMA DeInit */
+    HAL_DMA_DeInit(hsd->hdmarx);
+    HAL_DMA_DeInit(hsd->hdmatx);
   /* USER CODE BEGIN SDIO_MspDeInit 1 */
 
   /* USER CODE END SDIO_MspDeInit 1 */
