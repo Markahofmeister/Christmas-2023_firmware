@@ -299,8 +299,8 @@ int playWavFile_Me(const char* fname) {
 		return EXIT_FAILURE;
 	}
 
-	if(channelsNum != 1) {
-		//UART_Printf("Wrong `channelsNum` value, 1 expected\r\n");
+	if(channelsNum != 2) {
+		//UART_Printf("Wrong `channelsNum` value, 2 expected\r\n");
 		f_close(&file);
 		return EXIT_FAILURE;
 	}
@@ -308,8 +308,8 @@ int playWavFile_Me(const char* fname) {
 	if((sampleRate != 44100) || (bytesPerSample != 4) || (bitsPerSamplePerChannel != 16) || (bytesPerSecond != 44100*2*2)
 	   || (dataSize < sizeof(signal_buff1) + sizeof(signal_buff2))) {
 		//UART_Printf("Wrong file format, 16 bit file with sample rate 44100 expected\r\n");
-		//f_close(&file);
-		//return EXIT_FAILURE;
+		f_close(&file);
+		return EXIT_FAILURE;
 	}
 
 	volatile uint16_t signal_buff[16384];
@@ -402,7 +402,7 @@ int main(void)
   {
 	  //HAL_StatusTypeDef tx = HAL_I2S_Transmit(&hi2s2, (uint16_t*)data, sizeof(data)/sizeof(data[0]), 1000);
 
-	  playWavFile_Me("can.wav");
+	  playWavFile_Me("canS.wav");
 
 //	  playWavFile("can.wav");
 //	  HAL_Delay(5000);

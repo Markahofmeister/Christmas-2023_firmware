@@ -7,23 +7,23 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, ALLOC, LOAD, READONLY, DATA
   1 .text         000069b4  080001e4  080001e4  000101e4  2**2
                   CONTENTS, ALLOC, LOAD, READONLY, CODE
-  2 .rodata       00000244  08006b98  08006b98  00016b98  2**2
+  2 .rodata       00000248  08006b98  08006b98  00016b98  2**2
                   CONTENTS, ALLOC, LOAD, READONLY, DATA
-  3 .ARM.extab    00000000  08006ddc  08006ddc  0002000c  2**0
+  3 .ARM.extab    00000000  08006de0  08006de0  0002000c  2**0
                   CONTENTS
-  4 .ARM          00000000  08006ddc  08006ddc  0002000c  2**0
+  4 .ARM          00000000  08006de0  08006de0  0002000c  2**0
                   CONTENTS
-  5 .preinit_array 00000000  08006ddc  08006ddc  0002000c  2**0
+  5 .preinit_array 00000000  08006de0  08006de0  0002000c  2**0
                   CONTENTS, ALLOC, LOAD, DATA
-  6 .init_array   00000004  08006ddc  08006ddc  00016ddc  2**2
+  6 .init_array   00000004  08006de0  08006de0  00016de0  2**2
                   CONTENTS, ALLOC, LOAD, DATA
-  7 .fini_array   00000004  08006de0  08006de0  00016de0  2**2
+  7 .fini_array   00000004  08006de4  08006de4  00016de4  2**2
                   CONTENTS, ALLOC, LOAD, DATA
-  8 .data         0000000c  20000000  08006de4  00020000  2**2
+  8 .data         0000000c  20000000  08006de8  00020000  2**2
                   CONTENTS, ALLOC, LOAD, DATA
-  9 .bss          00000344  2000000c  08006df0  0002000c  2**2
+  9 .bss          00000344  2000000c  08006df4  0002000c  2**2
                   ALLOC
- 10 ._user_heap_stack 00000600  20000350  08006df0  00020350  2**0
+ 10 ._user_heap_stack 00000600  20000350  08006df4  00020350  2**0
                   ALLOC
  11 .ARM.attributes 00000029  00000000  00000000  0002000c  2**0
                   CONTENTS, READONLY
@@ -451,11 +451,11 @@ int playWavFile_Me(const char* fname) {
  80005da:	e08d      	b.n	80006f8 <playWavFile_Me+0x4d4>
 	}
 
-	if(channelsNum != 1) {
+	if(channelsNum != 2) {
  80005dc:	f507 4302 	add.w	r3, r7, #33280	; 0x8200
  80005e0:	f103 037c 	add.w	r3, r3, #124	; 0x7c
  80005e4:	881b      	ldrh	r3, [r3, #0]
- 80005e6:	2b01      	cmp	r3, #1
+ 80005e6:	2b02      	cmp	r3, #2
  80005e8:	d00e      	beq.n	8000608 <playWavFile_Me+0x3e4>
 		//UART_Printf("Wrong `channelsNum` value, 1 expected\r\n");
 		f_close(&file);
@@ -659,7 +659,7 @@ int main(void)
   {
 	  //HAL_StatusTypeDef tx = HAL_I2S_Transmit(&hi2s2, (uint16_t*)data, sizeof(data)/sizeof(data[0]), 1000);
 
-	  playWavFile_Me("can.wav");
+	  playWavFile_Me("canS.wav");
  800075a:	4807      	ldr	r0, [pc, #28]	; (8000778 <main+0x70>)
  800075c:	f7ff fd62 	bl	8000224 <playWavFile_Me>
  8000760:	e7fb      	b.n	800075a <main+0x52>
@@ -675,7 +675,7 @@ int main(void)
  800076a:	bd80      	pop	{r7, pc}
  800076c:	08006bb4 	.word	0x08006bb4
  8000770:	200000e8 	.word	0x200000e8
- 8000774:	08006bc4 	.word	0x08006bc4
+ 8000774:	08006bc8 	.word	0x08006bc8
  8000778:	08006bbc 	.word	0x08006bbc
 
 0800077c <SystemClock_Config>:
@@ -1632,7 +1632,7 @@ LoopFillZerobss:
   ldr r1, =_edata
  8000c04:	2000000c 	.word	0x2000000c
   ldr r2, =_sidata
- 8000c08:	08006de4 	.word	0x08006de4
+ 8000c08:	08006de8 	.word	0x08006de8
   ldr r2, =_sbss
  8000c0c:	2000000c 	.word	0x2000000c
   ldr r4, =_ebss
@@ -4753,7 +4753,7 @@ if (((RCC_ClkInitStruct->ClockType) & RCC_CLOCKTYPE_PCLK1) == RCC_CLOCKTYPE_PCLK
  8001d56:	bf00      	nop
  8001d58:	40022000 	.word	0x40022000
  8001d5c:	40021000 	.word	0x40021000
- 8001d60:	08006d08 	.word	0x08006d08
+ 8001d60:	08006d0c 	.word	0x08006d0c
  8001d64:	20000000 	.word	0x20000000
  8001d68:	20000004 	.word	0x20000004
 
@@ -4888,8 +4888,8 @@ uint32_t HAL_RCC_GetSysClockFreq(void)
  8001dfe:	bf00      	nop
  8001e00:	40021000 	.word	0x40021000
  8001e04:	00b71b00 	.word	0x00b71b00
- 8001e08:	08006d20 	.word	0x08006d20
- 8001e0c:	08006d30 	.word	0x08006d30
+ 8001e08:	08006d24 	.word	0x08006d24
+ 8001e0c:	08006d34 	.word	0x08006d34
  8001e10:	003d0900 	.word	0x003d0900
  8001e14:	007a1200 	.word	0x007a1200
 
@@ -4936,7 +4936,7 @@ uint32_t HAL_RCC_GetPCLK2Freq(void)
  8001e48:	4618      	mov	r0, r3
  8001e4a:	bd80      	pop	{r7, pc}
  8001e4c:	40021000 	.word	0x40021000
- 8001e50:	08006d18 	.word	0x08006d18
+ 8001e50:	08006d1c 	.word	0x08006d1c
 
 08001e54 <RCC_Delay>:
   * @brief  This function provides delay (in milliseconds) based on CPU cycles method.
@@ -5538,8 +5538,8 @@ uint32_t HAL_RCCEx_GetPeriphCLKFreq(uint32_t PeriphClk)
  8002190:	bd80      	pop	{r7, pc}
  8002192:	bf00      	nop
  8002194:	40021000 	.word	0x40021000
- 8002198:	08006d34 	.word	0x08006d34
- 800219c:	08006d44 	.word	0x08006d44
+ 8002198:	08006d38 	.word	0x08006d38
+ 800219c:	08006d48 	.word	0x08006d48
  80021a0:	00b71b00 	.word	0x00b71b00
  80021a4:	003d0900 	.word	0x003d0900
  80021a8:	aaaaaaab 	.word	0xaaaaaaab
@@ -10197,7 +10197,7 @@ void MX_FATFS_Init(void)
  8003b1c:	bf00      	nop
  8003b1e:	bd80      	pop	{r7, pc}
  8003b20:	20000320 	.word	0x20000320
- 8003b24:	08006dc8 	.word	0x08006dc8
+ 8003b24:	08006dcc 	.word	0x08006dcc
  8003b28:	2000031c 	.word	0x2000031c
 
 08003b2c <get_fattime>:
@@ -13727,8 +13727,8 @@ FRESULT create_name (
  8005146:	3720      	adds	r7, #32
  8005148:	46bd      	mov	sp, r7
  800514a:	bd80      	pop	{r7, pc}
- 800514c:	08006d48 	.word	0x08006d48
- 8005150:	08006cc4 	.word	0x08006cc4
+ 800514c:	08006d4c 	.word	0x08006d4c
+ 8005150:	08006cc8 	.word	0x08006cc8
 
 08005154 <follow_path>:
 static
@@ -17326,10 +17326,10 @@ DRESULT SD_ioctl(BYTE lun, BYTE cmd, void *buff)
  8006b1e:	4798      	blx	r3
  8006b20:	3601      	adds	r6, #1
  8006b22:	e7f2      	b.n	8006b0a <__libc_init_array+0x1e>
- 8006b24:	08006ddc 	.word	0x08006ddc
- 8006b28:	08006ddc 	.word	0x08006ddc
- 8006b2c:	08006ddc 	.word	0x08006ddc
- 8006b30:	08006de0 	.word	0x08006de0
+ 8006b24:	08006de0 	.word	0x08006de0
+ 8006b28:	08006de0 	.word	0x08006de0
+ 8006b2c:	08006de0 	.word	0x08006de0
+ 8006b30:	08006de4 	.word	0x08006de4
 
 08006b34 <memcmp>:
  8006b34:	b510      	push	{r4, lr}
