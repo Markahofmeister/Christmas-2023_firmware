@@ -534,6 +534,7 @@ int main(void)
 	   }
 
 	  playWavFile("canS.wav");
+	  MX_I2S2_Init();
 
 	  //playWavFile("1k.wav");
 
