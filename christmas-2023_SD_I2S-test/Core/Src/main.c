@@ -527,8 +527,11 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 
+
+
   while (1)
   {
+
 	  FRESULT res = f_mount(&fs, "XMAS-23", 1);
 	   if(res != FR_OK) {
 		   return EXIT_FAILURE;
@@ -536,7 +539,12 @@ int main(void)
 
 	  playWavFile("canS.wav");
 
+	  //playWavFile("1k.wav");
+
 	  res = f_mount(0, "XMAS-23", 0);
+	  if(res != FR_OK) {
+		   return EXIT_FAILURE;
+	   }
 
     /* USER CODE END WHILE */
 
