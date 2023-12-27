@@ -112,6 +112,9 @@ volatile uint16_t* signal_read_buff = NULL;
 volatile uint16_t signal_buff1[4096];
 volatile uint16_t signal_buff2[4096];
 
+char *fileNames[] = {"yard.wav", "shit.wav", "gift.wav", "nut.wav", "grace.wav",
+					"dump.wav", "treeBig.wav", "kma.wav", "winterMorn.wav", "rant.wav"};
+
 void HAL_I2S_TxCpltCallback(I2S_HandleTypeDef *hi2s) {
     if(end_of_file_reached)
         return;
@@ -283,9 +286,6 @@ int main(void)
 
   /* USER CODE BEGIN Init */
 
-  // Calibrate ADC
-  HAL_ADCEx_Calibration_Start(&hadc1);
-
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -303,10 +303,22 @@ int main(void)
   MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
 
+  // Calibrate ADC
+  HAL_ADCEx_Calibration_Start(&hadc1);
+
   FRESULT res = f_mount(&fs, "XMAS-23", 1);
 	 if(res != FR_OK) {
 	   return EXIT_FAILURE;
 	 }
+
+	// Clear any existing shift register data
+	HAL_GPIO_WritePin(GPIOB, shiftMCLR, GPIOPinSet[0]);
+	HAL_GPIO_WritePin(GPIOB, shiftMCLR, GPIOPinSet[1]);
+
+	// Store cleared data and Enable output
+	HAL_GPIO_WritePin(GPIOB, shiftStoreClock, GPIOPinSet[1]);
+	HAL_GPIO_WritePin(GPIOB, shiftStoreClock, GPIOPinSet[0]);
+	HAL_GPIO_WritePin(GPIOB, shiftOutputEnable, GPIOPinSet[0]);
 
   /* USER CODE END 2 */
 
@@ -314,6 +326,16 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+
+//	  for (int i = 0; i < 10; i++) {
+//		  char *currFile = fileNames[i];
+//		playWavFile(currFile);
+//		  if (HAL_I2S_Init(&hi2s2) != HAL_OK)
+//		   {
+//			 Error_Handler();
+//		   }
+//	  }
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -509,11 +531,17 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(I2S_AMP_SD_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : BUTTON_1_Pin BUTTON_5_Pin */
-  GPIO_InitStruct.Pin = BUTTON_1_Pin|BUTTON_5_Pin;
+  /*Configure GPIO pins : BUTTON_1_Pin BUTTON_3_Pin BUTTON_4_Pin BUTTON_5_Pin */
+  GPIO_InitStruct.Pin = BUTTON_1_Pin|BUTTON_3_Pin|BUTTON_4_Pin|BUTTON_5_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : BUTTON_2_Pin */
+  GPIO_InitStruct.Pin = BUTTON_2_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(BUTTON_2_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : STAT_LED_Pin */
   GPIO_InitStruct.Pin = STAT_LED_Pin;
@@ -537,10 +565,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(SDIO_CARD_DETECT_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : BUTTON_10_Pin BUTTON_9_Pin BUTTON_8_Pin BUTTON_7_Pin
-                           BUTTON_6_Pin */
-  GPIO_InitStruct.Pin = BUTTON_10_Pin|BUTTON_9_Pin|BUTTON_8_Pin|BUTTON_7_Pin
-                          |BUTTON_6_Pin;
+  /*Configure GPIO pins : BUTTON_10_Pin BUTTON_8_Pin */
+  GPIO_InitStruct.Pin = BUTTON_10_Pin|BUTTON_8_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
@@ -566,6 +592,7 @@ static void MX_GPIO_Init(void)
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 
+	int i = 0;
 
 	if(GPIO_Pin == buttonIn_1) {
 		playWavFile("yard.wav");
