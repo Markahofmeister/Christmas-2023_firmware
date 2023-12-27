@@ -1357,36 +1357,36 @@ static void MX_GPIO_Init(void)
  8000ac8:	f000 ff04 	bl	80018d4 <HAL_GPIO_Init>
 
   /* EXTI interrupt init*/
-  HAL_NVIC_SetPriority(EXTI3_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(EXTI3_IRQn, 3, 0);
  8000acc:	2200      	movs	r2, #0
- 8000ace:	2100      	movs	r1, #0
+ 8000ace:	2103      	movs	r1, #3
  8000ad0:	2009      	movs	r0, #9
  8000ad2:	f000 fec8 	bl	8001866 <HAL_NVIC_SetPriority>
   HAL_NVIC_EnableIRQ(EXTI3_IRQn);
  8000ad6:	2009      	movs	r0, #9
  8000ad8:	f000 fee1 	bl	800189e <HAL_NVIC_EnableIRQ>
 
-  HAL_NVIC_SetPriority(EXTI4_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(EXTI4_IRQn, 3, 0);
  8000adc:	2200      	movs	r2, #0
- 8000ade:	2100      	movs	r1, #0
+ 8000ade:	2103      	movs	r1, #3
  8000ae0:	200a      	movs	r0, #10
  8000ae2:	f000 fec0 	bl	8001866 <HAL_NVIC_SetPriority>
   HAL_NVIC_EnableIRQ(EXTI4_IRQn);
  8000ae6:	200a      	movs	r0, #10
  8000ae8:	f000 fed9 	bl	800189e <HAL_NVIC_EnableIRQ>
 
-  HAL_NVIC_SetPriority(EXTI9_5_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(EXTI9_5_IRQn, 3, 0);
  8000aec:	2200      	movs	r2, #0
- 8000aee:	2100      	movs	r1, #0
+ 8000aee:	2103      	movs	r1, #3
  8000af0:	2017      	movs	r0, #23
  8000af2:	f000 feb8 	bl	8001866 <HAL_NVIC_SetPriority>
   HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
  8000af6:	2017      	movs	r0, #23
  8000af8:	f000 fed1 	bl	800189e <HAL_NVIC_EnableIRQ>
 
-  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 3, 0);
  8000afc:	2200      	movs	r2, #0
- 8000afe:	2100      	movs	r1, #0
+ 8000afe:	2103      	movs	r1, #3
  8000b00:	2028      	movs	r0, #40	; 0x28
  8000b02:	f000 feb0 	bl	8001866 <HAL_NVIC_SetPriority>
   HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
@@ -1804,9 +1804,9 @@ void HAL_I2S_MspInit(I2S_HandleTypeDef* hi2s)
  8000d6a:	f000 fdb3 	bl	80018d4 <HAL_GPIO_Init>
 
     /* I2S2 interrupt Init */
-    HAL_NVIC_SetPriority(SPI2_IRQn, 0, 0);
+    HAL_NVIC_SetPriority(SPI2_IRQn, 2, 0);
  8000d6e:	2200      	movs	r2, #0
- 8000d70:	2100      	movs	r1, #0
+ 8000d70:	2102      	movs	r1, #2
  8000d72:	2024      	movs	r0, #36	; 0x24
  8000d74:	f000 fd77 	bl	8001866 <HAL_NVIC_SetPriority>
     HAL_NVIC_EnableIRQ(SPI2_IRQn);
