@@ -121,7 +121,7 @@ int main(void)
   uint16_t ADC_Return = 0;
  8000242:	2300      	movs	r3, #0
  8000244:	80bb      	strh	r3, [r7, #4]
-  // Calibrate HAL
+  // Calibrate ADC
   HAL_ADCEx_Calibration_Start(&hadc1);
  8000246:	4872      	ldr	r0, [pc, #456]	; (8000410 <main+0x1ec>)
  8000248:	f001 f8c8 	bl	80013dc <HAL_ADCEx_Calibration_Start>

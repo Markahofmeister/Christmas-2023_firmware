@@ -55,6 +55,8 @@ I2S_HandleTypeDef hi2s2;
 
 SD_HandleTypeDef hsd;
 
+TIM_HandleTypeDef htim4;
+
 /* USER CODE BEGIN PV */
 
 // Debug LED on PCB
@@ -89,6 +91,8 @@ GPIO_PinState GPIOPinSet[2] = {GPIO_PIN_RESET, GPIO_PIN_SET};
 
 static uint8_t playIndex = 0;
 
+static float volume = 1.0;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -97,6 +101,7 @@ static void MX_GPIO_Init(void);
 static void MX_SDIO_SD_Init(void);
 static void MX_I2S2_Init(void);
 static void MX_ADC1_Init(void);
+static void MX_TIM4_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -105,7 +110,6 @@ static void MX_ADC1_Init(void);
 /* USER CODE BEGIN 0 */
 
 FATFS fs;
-
 
 volatile bool end_of_file_reached = false;
 volatile bool read_next_chunk = false;
@@ -306,24 +310,28 @@ int main(void)
   MX_FATFS_Init();
   MX_I2S2_Init();
   MX_ADC1_Init();
+  MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
 
   // Calibrate ADC
   HAL_ADCEx_Calibration_Start(&hadc1);
 
+  // Start timer to check ADC on interrupts
+  HAL_TIM_Base_Start_IT(&htim4);
+
+  // Clear any existing shift register data
+  	HAL_GPIO_WritePin(GPIOB, shiftMCLR, GPIOPinSet[0]);
+  	HAL_GPIO_WritePin(GPIOB, shiftMCLR, GPIOPinSet[1]);
+
+  	// Store cleared data and Enable output
+  	HAL_GPIO_WritePin(GPIOB, shiftStoreClock, GPIOPinSet[1]);
+  	HAL_GPIO_WritePin(GPIOB, shiftStoreClock, GPIOPinSet[0]);
+  	HAL_GPIO_WritePin(GPIOB, shiftOutputEnable, GPIOPinSet[0]);
+
   FRESULT res = f_mount(&fs, "XMAS-23", 1);
 	 if(res != FR_OK) {
 	   return EXIT_FAILURE;
 	 }
-
-	// Clear any existing shift register data
-	HAL_GPIO_WritePin(GPIOB, shiftMCLR, GPIOPinSet[0]);
-	HAL_GPIO_WritePin(GPIOB, shiftMCLR, GPIOPinSet[1]);
-
-	// Store cleared data and Enable output
-	HAL_GPIO_WritePin(GPIOB, shiftStoreClock, GPIOPinSet[1]);
-	HAL_GPIO_WritePin(GPIOB, shiftStoreClock, GPIOPinSet[0]);
-	HAL_GPIO_WritePin(GPIOB, shiftOutputEnable, GPIOPinSet[0]);
 
   /* USER CODE END 2 */
 
@@ -498,6 +506,51 @@ static void MX_SDIO_SD_Init(void)
 }
 
 /**
+  * @brief TIM4 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM4_Init(void)
+{
+
+  /* USER CODE BEGIN TIM4_Init 0 */
+
+  /* USER CODE END TIM4_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM4_Init 1 */
+
+  /* USER CODE END TIM4_Init 1 */
+  htim4.Instance = TIM4;
+  htim4.Init.Prescaler = 4801-1;
+  htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim4.Init.Period = 999;
+  htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim4.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim4) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim4, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim4, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM4_Init 2 */
+
+  /* USER CODE END TIM4_Init 2 */
+
+}
+
+/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -614,6 +667,27 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 		playIndex = 10;
 
 }
+
+// Callback: timer has rolled over
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+  // Check which version of the timer triggered this callback
+  if (htim == &htim4)
+  {
+	  // Start ADC Conversion
+	  HAL_ADC_Start(&hadc1);
+
+	 // Poll ADC1 Peripheral & TimeOut = 1mSec
+	  HAL_ADC_PollForConversion(&hadc1, 1);
+
+	  // Read The ADC Conversion Result & Map It To Shift register
+	  // Resolution = 12 bit, 2^12 = 4096
+	  uint16_t ADC_Return = HAL_ADC_GetValue(&hadc1);
+	  volume = ((float)ADC_Return) / 4096.0;
+
+  }
+}
+
 
 /* USER CODE END 4 */
 
