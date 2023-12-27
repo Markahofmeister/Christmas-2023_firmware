@@ -48,11 +48,44 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+ADC_HandleTypeDef hadc1;
+
 I2S_HandleTypeDef hi2s2;
 
 SD_HandleTypeDef hsd;
 
 /* USER CODE BEGIN PV */
+
+// Debug LED on PCB
+const uint16_t debugLED = GPIO_PIN_5;		// Port C
+
+/*
+ * Shift register Pins
+ */
+uint16_t shiftData = GPIO_PIN_1;			// Port B
+uint16_t shiftDataClock = GPIO_PIN_2; 		// Port B
+uint16_t shiftStoreClock = GPIO_PIN_10;		// Port B
+uint16_t shiftOutputEnable = GPIO_PIN_0;	// Port B
+uint16_t shiftMCLR = GPIO_PIN_11;			// Port B
+
+// ADC Pin
+uint16_t ADC_IN = GPIO_PIN_1; 				// Port A
+
+// Button Input Pins
+uint16_t buttonIn_1 = GPIO_PIN_7;			// Port A
+uint16_t buttonIn_2 = GPIO_PIN_4;			// Port C
+uint16_t buttonIn_3 = GPIO_PIN_8;			// Port	A
+uint16_t buttonIn_4 = GPIO_PIN_9;			// Port A
+uint16_t buttonIn_5 = GPIO_PIN_10;			// Port A
+uint16_t buttonIn_6 = GPIO_PIN_9;			// Port B
+uint16_t buttonIn_7 = GPIO_PIN_8;			// Port B
+uint16_t buttonIn_8 = GPIO_PIN_5;			// Port B
+uint16_t buttonIn_9 = GPIO_PIN_4;			// Port B
+uint16_t buttonIn_10 = GPIO_PIN_3;			// Port B
+
+// For setting GPIO high or low in a more pretty fashion
+GPIO_PinState GPIOPinSet[2] = {GPIO_PIN_RESET, GPIO_PIN_SET};
+
 
 /* USER CODE END PV */
 
@@ -61,6 +94,7 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_SDIO_SD_Init(void);
 static void MX_I2S2_Init(void);
+static void MX_ADC1_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -249,6 +283,9 @@ int main(void)
 
   /* USER CODE BEGIN Init */
 
+  // Calibrate ADC
+  HAL_ADCEx_Calibration_Start(&hadc1);
+
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -263,6 +300,7 @@ int main(void)
   MX_SDIO_SD_Init();
   MX_FATFS_Init();
   MX_I2S2_Init();
+  MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
 
   FRESULT res = f_mount(&fs, "XMAS-23", 1);
@@ -321,12 +359,60 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_I2S2;
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_ADC|RCC_PERIPHCLK_I2S2;
+  PeriphClkInit.AdcClockSelection = RCC_ADCPCLK2_DIV6;
   PeriphClkInit.I2s2ClockSelection = RCC_I2S2CLKSOURCE_SYSCLK;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
   {
     Error_Handler();
   }
+}
+
+/**
+  * @brief ADC1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_ADC1_Init(void)
+{
+
+  /* USER CODE BEGIN ADC1_Init 0 */
+
+  /* USER CODE END ADC1_Init 0 */
+
+  ADC_ChannelConfTypeDef sConfig = {0};
+
+  /* USER CODE BEGIN ADC1_Init 1 */
+
+  /* USER CODE END ADC1_Init 1 */
+
+  /** Common config
+  */
+  hadc1.Instance = ADC1;
+  hadc1.Init.ScanConvMode = ADC_SCAN_DISABLE;
+  hadc1.Init.ContinuousConvMode = DISABLE;
+  hadc1.Init.DiscontinuousConvMode = DISABLE;
+  hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
+  hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
+  hadc1.Init.NbrOfConversion = 1;
+  if (HAL_ADC_Init(&hadc1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure Regular Channel
+  */
+  sConfig.Channel = ADC_CHANNEL_1;
+  sConfig.Rank = ADC_REGULAR_RANK_1;
+  sConfig.SamplingTime = ADC_SAMPLETIME_1CYCLE_5;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN ADC1_Init 2 */
+
+  /* USER CODE END ADC1_Init 2 */
+
 }
 
 /**
@@ -412,12 +498,22 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(STAT_LED_GPIO_Port, STAT_LED_Pin, GPIO_PIN_RESET);
 
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOB, SHIFT_OE_Pin|SHIFT_DATA_OUT_Pin|SHIFT_DATA_CLK_Pin|SHIFT_STORE_CLK_Pin
+                          |SHIFT_MCLR_Pin, GPIO_PIN_RESET);
+
   /*Configure GPIO pin : I2S_AMP_SD_Pin */
   GPIO_InitStruct.Pin = I2S_AMP_SD_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(I2S_AMP_SD_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : BUTTON_1_Pin BUTTON_5_Pin */
+  GPIO_InitStruct.Pin = BUTTON_1_Pin|BUTTON_5_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pin : STAT_LED_Pin */
   GPIO_InitStruct.Pin = STAT_LED_Pin;
@@ -426,23 +522,103 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(STAT_LED_GPIO_Port, &GPIO_InitStruct);
 
+  /*Configure GPIO pins : SHIFT_OE_Pin SHIFT_DATA_OUT_Pin SHIFT_DATA_CLK_Pin SHIFT_STORE_CLK_Pin
+                           SHIFT_MCLR_Pin */
+  GPIO_InitStruct.Pin = SHIFT_OE_Pin|SHIFT_DATA_OUT_Pin|SHIFT_DATA_CLK_Pin|SHIFT_STORE_CLK_Pin
+                          |SHIFT_MCLR_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
   /*Configure GPIO pin : SDIO_CARD_DETECT_Pin */
   GPIO_InitStruct.Pin = SDIO_CARD_DETECT_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(SDIO_CARD_DETECT_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : SDIO_CD_FAKE_Pin */
-  GPIO_InitStruct.Pin = SDIO_CD_FAKE_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  /*Configure GPIO pins : BUTTON_10_Pin BUTTON_9_Pin BUTTON_8_Pin BUTTON_7_Pin
+                           BUTTON_6_Pin */
+  GPIO_InitStruct.Pin = BUTTON_10_Pin|BUTTON_9_Pin|BUTTON_8_Pin|BUTTON_7_Pin
+                          |BUTTON_6_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
-  HAL_GPIO_Init(SDIO_CD_FAKE_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI3_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI3_IRQn);
+
+  HAL_NVIC_SetPriority(EXTI4_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI4_IRQn);
+
+  HAL_NVIC_SetPriority(EXTI9_5_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
+
+  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
+
+
+	if(GPIO_Pin == buttonIn_1) {
+		playWavFile("yard.wav");
+	    if (HAL_I2S_Init(&hi2s2) != HAL_OK)
+		   Error_Handler();
+	    }
+	else if(GPIO_Pin == buttonIn_2) {
+		playWavFile("shit.wav");
+	    if (HAL_I2S_Init(&hi2s2) != HAL_OK)
+		   Error_Handler();
+		}
+	else if(GPIO_Pin == buttonIn_3) {
+		playWavFile("gift.wav");
+	    if (HAL_I2S_Init(&hi2s2) != HAL_OK)
+		   Error_Handler();
+		}
+	else if(GPIO_Pin == buttonIn_4) {
+		playWavFile("nut.wav");
+	    if (HAL_I2S_Init(&hi2s2) != HAL_OK)
+		   Error_Handler();
+		}
+	else if(GPIO_Pin == buttonIn_5) {
+		playWavFile("grace.wav");
+	    if (HAL_I2S_Init(&hi2s2) != HAL_OK)
+		   Error_Handler();
+		}
+	else if(GPIO_Pin == buttonIn_6) {
+		playWavFile("dump.wav");
+	    if (HAL_I2S_Init(&hi2s2) != HAL_OK)
+		   Error_Handler();
+		}
+	else if(GPIO_Pin == buttonIn_7) {
+		playWavFile("treeBig.wav");
+	    if (HAL_I2S_Init(&hi2s2) != HAL_OK)
+		   Error_Handler();
+		}
+	else if(GPIO_Pin == buttonIn_8) {
+		playWavFile("kma.wav");
+	    if (HAL_I2S_Init(&hi2s2) != HAL_OK)
+		   Error_Handler();
+		}
+	else if(GPIO_Pin == buttonIn_9) {
+		playWavFile("winterMorn.wav");
+	    if (HAL_I2S_Init(&hi2s2) != HAL_OK)
+		   Error_Handler();
+		}
+	else if(GPIO_Pin == buttonIn_10) {
+		playWavFile("rant.wav");
+	    if (HAL_I2S_Init(&hi2s2) != HAL_OK)
+		   Error_Handler();
+		}
+
+}
 
 /* USER CODE END 4 */
 

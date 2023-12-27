@@ -131,7 +131,7 @@ int main(void)
 
   // Define return variable for ADC
   uint16_t ADC_Return = 0;
-  // Calibrate HAL
+  // Calibrate ADC
   HAL_ADCEx_Calibration_Start(&hadc1);
 
   /* USER CODE END 2 */
