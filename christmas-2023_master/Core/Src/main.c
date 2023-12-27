@@ -26,6 +26,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include "wav.h"
 #include <stdarg.h>
 #include <math.h>
@@ -86,6 +87,7 @@ uint16_t buttonIn_10 = GPIO_PIN_3;			// Port B
 // For setting GPIO high or low in a more pretty fashion
 GPIO_PinState GPIOPinSet[2] = {GPIO_PIN_RESET, GPIO_PIN_SET};
 
+static uint8_t playIndex = 0;
 
 /* USER CODE END PV */
 
@@ -112,7 +114,7 @@ volatile uint16_t* signal_read_buff = NULL;
 volatile uint16_t signal_buff1[4096];
 volatile uint16_t signal_buff2[4096];
 
-char *fileNames[] = {"yard.wav", "shit.wav", "gift.wav", "nut.wav", "grace.wav",
+char *fileNames[] = {"blank.wav", "yard.wav", "shit.wav", "gift.wav", "nut.wav", "grace.wav",
 					"dump.wav", "treeBig.wav", "kma.wav", "winterMorn.wav", "rant.wav"};
 
 void HAL_I2S_TxCpltCallback(I2S_HandleTypeDef *hi2s) {
@@ -264,8 +266,11 @@ int playWavFile(const char* fname) {
         return EXIT_FAILURE;
     }
 
+    playIndex = 0;
+
     return 0;
 }
+
 
 /* USER CODE END 0 */
 
@@ -327,12 +332,15 @@ int main(void)
   while (1)
   {
 
+	  playWavFile(fileNames[playIndex]);
+	  if (HAL_I2S_Init(&hi2s2) != HAL_OK)
+		   Error_Handler();
+
 //	  for (int i = 0; i < 10; i++) {
 //		  char *currFile = fileNames[i];
 //		playWavFile(currFile);
 //		  if (HAL_I2S_Init(&hi2s2) != HAL_OK)
 //		   {
-//			 Error_Handler();
 //		   }
 //	  }
 
@@ -592,58 +600,26 @@ static void MX_GPIO_Init(void)
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 
-	int i = 0;
-
-	if(GPIO_Pin == buttonIn_1) {
-		playWavFile("yard.wav");
-	    if (HAL_I2S_Init(&hi2s2) != HAL_OK)
-		   Error_Handler();
-	    }
-	else if(GPIO_Pin == buttonIn_2) {
-		playWavFile("shit.wav");
-	    if (HAL_I2S_Init(&hi2s2) != HAL_OK)
-		   Error_Handler();
-		}
-	else if(GPIO_Pin == buttonIn_3) {
-		playWavFile("gift.wav");
-	    if (HAL_I2S_Init(&hi2s2) != HAL_OK)
-		   Error_Handler();
-		}
-	else if(GPIO_Pin == buttonIn_4) {
-		playWavFile("nut.wav");
-	    if (HAL_I2S_Init(&hi2s2) != HAL_OK)
-		   Error_Handler();
-		}
-	else if(GPIO_Pin == buttonIn_5) {
-		playWavFile("grace.wav");
-	    if (HAL_I2S_Init(&hi2s2) != HAL_OK)
-		   Error_Handler();
-		}
-	else if(GPIO_Pin == buttonIn_6) {
-		playWavFile("dump.wav");
-	    if (HAL_I2S_Init(&hi2s2) != HAL_OK)
-		   Error_Handler();
-		}
-	else if(GPIO_Pin == buttonIn_7) {
-		playWavFile("treeBig.wav");
-	    if (HAL_I2S_Init(&hi2s2) != HAL_OK)
-		   Error_Handler();
-		}
-	else if(GPIO_Pin == buttonIn_8) {
-		playWavFile("kma.wav");
-	    if (HAL_I2S_Init(&hi2s2) != HAL_OK)
-		   Error_Handler();
-		}
-	else if(GPIO_Pin == buttonIn_9) {
-		playWavFile("winterMorn.wav");
-	    if (HAL_I2S_Init(&hi2s2) != HAL_OK)
-		   Error_Handler();
-		}
-	else if(GPIO_Pin == buttonIn_10) {
-		playWavFile("rant.wav");
-	    if (HAL_I2S_Init(&hi2s2) != HAL_OK)
-		   Error_Handler();
-		}
+	if(GPIO_Pin == buttonIn_1)
+		playIndex = 1;
+	else if(GPIO_Pin == buttonIn_2)
+		playIndex = 2;
+	else if(GPIO_Pin == buttonIn_3)
+		playIndex = 3;
+	else if(GPIO_Pin == buttonIn_4)
+		playIndex = 4;
+	else if(GPIO_Pin == buttonIn_5)
+		playIndex = 5;
+	else if(GPIO_Pin == buttonIn_6)
+		playIndex = 6;
+	else if(GPIO_Pin == buttonIn_7)
+		playIndex = 7;
+	else if(GPIO_Pin == buttonIn_8)
+		playIndex = 8;
+	else if(GPIO_Pin == buttonIn_9)
+		playIndex = 9;
+	else if(GPIO_Pin == buttonIn_10)
+		playIndex = 10;
 
 }
 
