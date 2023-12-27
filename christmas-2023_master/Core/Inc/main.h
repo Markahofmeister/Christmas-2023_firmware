@@ -57,6 +57,14 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define GAIN_3DB_NOT_Pin GPIO_PIN_0
+#define GAIN_3DB_NOT_GPIO_Port GPIOC
+#define GAIN_6DB_NOT_Pin GPIO_PIN_1
+#define GAIN_6DB_NOT_GPIO_Port GPIOC
+#define GAIN_12DB_Pin GPIO_PIN_2
+#define GAIN_12DB_GPIO_Port GPIOC
+#define GAIN_15DB_Pin GPIO_PIN_3
+#define GAIN_15DB_GPIO_Port GPIOC
 #define I2S_AMP_SD_Pin GPIO_PIN_2
 #define I2S_AMP_SD_GPIO_Port GPIOA
 #define BUTTON_1_Pin GPIO_PIN_7
