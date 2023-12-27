@@ -129,6 +129,12 @@ void HAL_I2S_TxCpltCallback(I2S_HandleTypeDef *hi2s) {
     signal_play_buff = signal_read_buff;
     signal_read_buff = temp;
 
+    //uint16_t buffSize = (sizeof(signal_play_buff)) / 4096;
+//
+//    for(int i = 0; i < 4096; i++) {
+//    	signal_play_buff[i] = (float)signal_play_buff[i] * volume;
+//    }
+
     int nsamples = sizeof(signal_buff1) / sizeof(signal_buff1[0]);
     HAL_I2S_Transmit_IT(&hi2s2, (uint16_t*)signal_play_buff, nsamples);
     read_next_chunk = true;
