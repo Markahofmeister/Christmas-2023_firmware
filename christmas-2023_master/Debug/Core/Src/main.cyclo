@@ -1,0 +1,8 @@
+main.c:81:6:HAL_I2S_TxCpltCallback	2
+main.c:94:5:playWavFile	21
+main.c:239:5:main	2
+main.c:290:6:SystemClock_Config	4
+main.c:337:13:MX_I2S2_Init	2
+main.c:369:13:MX_SDIO_SD_Init	1
+main.c:397:13:MX_GPIO_Init	1
+main.c:453:6:Error_Handler	1
