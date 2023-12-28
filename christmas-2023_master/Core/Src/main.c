@@ -99,7 +99,7 @@ static uint8_t playIndex = 0;
 
 static uint8_t volume = 2;
 
-static uint8_t shiftBit[8] = {0b1000000, 0b01000000, 0b00100000, 0b00010000,
+static uint8_t shiftBytes[8] = {0b10000000, 0b01000000, 0b00100000, 0b00010000,
 								0b00001000, 0b00000100, 0b00000010, 0b00000001};
 
 /* USER CODE END PV */
@@ -727,6 +727,30 @@ void resetGains() {
 	 HAL_GPIO_WritePin(GPIOC, gain_15DB, GPIOPinSet[0]);
 }
 
+void shiftNewVol(uint8_t shiftByte) {
+
+		for(int j = 0; j < 8; j++) {
+
+			// Write data pin with LSB of data
+			HAL_GPIO_WritePin(GPIOB, shiftData, GPIOPinSet[shiftByte & 1]);
+
+			// Toggle clock GPIO to shift bit into register
+			HAL_GPIO_WritePin(GPIOB, shiftDataClock, GPIOPinSet[1]);
+			HAL_GPIO_WritePin(GPIOB, shiftDataClock, GPIOPinSet[0]);
+
+			// Once data pin has been written and shifted out, shift data right by one bit.
+			shiftByte >>= 1;
+
+		}
+
+		// Once all data has been shifted out, toggle store clock register to display data.
+
+		HAL_GPIO_WritePin(GPIOB, shiftStoreClock, GPIOPinSet[1]);
+		HAL_GPIO_WritePin(GPIOB, shiftStoreClock, GPIOPinSet[0]);
+
+		return;
+}
+
 // Callback: timer has rolled over
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
@@ -743,8 +767,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	  // Resolution = 12 bit, 2^12 = 4096
 	  uint16_t ADC_Return = HAL_ADC_GetValue(&hadc1);
 
-	  uint8_t shiftBitCurr = ADC_Return / (4096 / 8);
-	  //shiftNewVol(shiftBit[shiftBitCurr]);
+	  uint8_t shiftByteCurr = ADC_Return / (4096 / 8);
+	  shiftNewVol(shiftBytes[shiftByteCurr]);
 
 	  volume = ADC_Return / (4096 / 5);
 	  switch(volume) {
