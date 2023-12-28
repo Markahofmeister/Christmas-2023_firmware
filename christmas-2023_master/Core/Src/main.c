@@ -99,6 +99,9 @@ static uint8_t playIndex = 0;
 
 static uint8_t volume = 2;
 
+static uint8_t shiftBit[8] = {0b1000000, 0b01000000, 0b00100000, 0b00010000,
+								0b00001000, 0b00000100, 0b00000010, 0b00000001};
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -352,41 +355,41 @@ int main(void)
   while (1)
   {
 
-	  HAL_GPIO_WritePin(GPIOC, gain_3DB_N, GPIOPinSet[0]);
-
+//	  HAL_GPIO_WritePin(GPIOC, gain_3DB_N, GPIOPinSet[0]);
+//
 	  playWavFile("canS.wav");
 	  if (HAL_I2S_Init(&hi2s2) != HAL_OK)
 	 	   Error_Handler();
-
-	  HAL_GPIO_WritePin(GPIOC, gain_3DB_N, GPIOPinSet[1]);
-	  HAL_GPIO_WritePin(GPIOC, gain_6DB_N, GPIOPinSet[0]);
-
-	  playWavFile("canS.wav");
-	  if (HAL_I2S_Init(&hi2s2) != HAL_OK)
-	  	 Error_Handler();
-
-	  HAL_GPIO_WritePin(GPIOC, gain_6DB_N, GPIOPinSet[1]);
-	  HAL_GPIO_WritePin(GPIOC, gain_12DB, GPIOPinSet[1]);
-
-	  playWavFile("canS.wav");
-	  if (HAL_I2S_Init(&hi2s2) != HAL_OK)
-	  	 Error_Handler();
-
-	  HAL_GPIO_WritePin(GPIOC, gain_12DB, GPIOPinSet[0]);
-	  HAL_GPIO_WritePin(GPIOC, gain_15DB, GPIOPinSet[1]);
-
-	  playWavFile("canS.wav");
-	  if (HAL_I2S_Init(&hi2s2) != HAL_OK)
-	  	 Error_Handler();
-
-	  HAL_GPIO_WritePin(GPIOC, gain_15DB, GPIOPinSet[0]);
-
-	  if (HAL_I2S_Init(&hi2s2) != HAL_OK)
-		   Error_Handler();
-
-//	  playWavFile(fileNames[playIndex]);
+//
+//	  HAL_GPIO_WritePin(GPIOC, gain_3DB_N, GPIOPinSet[1]);
+//	  HAL_GPIO_WritePin(GPIOC, gain_6DB_N, GPIOPinSet[0]);
+//
+//	  playWavFile("canS.wav");
+//	  if (HAL_I2S_Init(&hi2s2) != HAL_OK)
+//	  	 Error_Handler();
+//
+//	  HAL_GPIO_WritePin(GPIOC, gain_6DB_N, GPIOPinSet[1]);
+//	  HAL_GPIO_WritePin(GPIOC, gain_12DB, GPIOPinSet[1]);
+//
+//	  playWavFile("canS.wav");
+//	  if (HAL_I2S_Init(&hi2s2) != HAL_OK)
+//	  	 Error_Handler();
+//
+//	  HAL_GPIO_WritePin(GPIOC, gain_12DB, GPIOPinSet[0]);
+//	  HAL_GPIO_WritePin(GPIOC, gain_15DB, GPIOPinSet[1]);
+//
+//	  playWavFile("canS.wav");
+//	  if (HAL_I2S_Init(&hi2s2) != HAL_OK)
+//	  	 Error_Handler();
+//
+//	  HAL_GPIO_WritePin(GPIOC, gain_15DB, GPIOPinSet[0]);
+//
 //	  if (HAL_I2S_Init(&hi2s2) != HAL_OK)
 //		   Error_Handler();
+
+	  playWavFile(fileNames[playIndex]);
+	  if (HAL_I2S_Init(&hi2s2) != HAL_OK)
+		   Error_Handler();
 
     /* USER CODE END WHILE */
 
@@ -717,6 +720,13 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 
 }
 
+void resetGains() {
+	 HAL_GPIO_WritePin(GPIOC, gain_3DB_N, GPIOPinSet[1]);
+	 HAL_GPIO_WritePin(GPIOC, gain_6DB_N, GPIOPinSet[1]);
+	 HAL_GPIO_WritePin(GPIOC, gain_12DB, GPIOPinSet[0]);
+	 HAL_GPIO_WritePin(GPIOC, gain_15DB, GPIOPinSet[0]);
+}
+
 // Callback: timer has rolled over
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
@@ -732,10 +742,40 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	  // Read The ADC Conversion Result & Map It To Shift register
 	  // Resolution = 12 bit, 2^12 = 4096
 	  uint16_t ADC_Return = HAL_ADC_GetValue(&hadc1);
-	  volume = ((float)ADC_Return) / 4096.0;
+
+	  uint8_t shiftBitCurr = ADC_Return / (4096 / 8);
+	  //shiftNewVol(shiftBit[shiftBitCurr]);
+
+	  volume = ADC_Return / (4096 / 5);
+	  switch(volume) {
+	  	  case 0:
+	  		  resetGains();
+	  		  HAL_GPIO_WritePin(GPIOC, gain_3DB_N, GPIOPinSet[0]);
+	  		  break;
+	  	  case 1:
+	  		  resetGains();
+	  		  HAL_GPIO_WritePin(GPIOC, gain_6DB_N, GPIOPinSet[0]);
+	  		  break;
+	  	  case 2:
+	  		  resetGains();
+
+	  		  break;
+	  	  case 3:
+	  		  resetGains();
+	  		  HAL_GPIO_WritePin(GPIOC, gain_12DB, GPIOPinSet[1]);
+	  		  break;
+	  	  case 4:
+	  		  resetGains();
+	  		  HAL_GPIO_WritePin(GPIOC, gain_15DB, GPIOPinSet[1]);
+	  		  break;
+	  	  default:
+
+	  		  break;
+	  }
 
   }
 }
+
 
 
 /* USER CODE END 4 */
