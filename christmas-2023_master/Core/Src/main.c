@@ -86,12 +86,18 @@ uint16_t buttonIn_8 = GPIO_PIN_5;			// Port B
 uint16_t buttonIn_9 = GPIO_PIN_4;			// Port B
 uint16_t buttonIn_10 = GPIO_PIN_3;			// Port B
 
+// Amplifier Gain Control Pins
+uint16_t gain_3DB_N = GPIO_PIN_0;			// Port C
+uint16_t gain_6DB_N = GPIO_PIN_1;			// Port C
+uint16_t gain_12DB = GPIO_PIN_2;			// Port C
+uint16_t gain_15DB = GPIO_PIN_3;			// Port C
+
 // For setting GPIO high or low in a more pretty fashion
 GPIO_PinState GPIOPinSet[2] = {GPIO_PIN_RESET, GPIO_PIN_SET};
 
 static uint8_t playIndex = 0;
 
-static float volume = 1.0;
+static uint8_t volume = 2;
 
 /* USER CODE END PV */
 
@@ -346,9 +352,41 @@ int main(void)
   while (1)
   {
 
-	  playWavFile(fileNames[playIndex]);
+	  HAL_GPIO_WritePin(GPIOC, gain_3DB_N, GPIOPinSet[0]);
+
+	  playWavFile("canS.wav");
+	  if (HAL_I2S_Init(&hi2s2) != HAL_OK)
+	 	   Error_Handler();
+
+	  HAL_GPIO_WritePin(GPIOC, gain_3DB_N, GPIOPinSet[1]);
+	  HAL_GPIO_WritePin(GPIOC, gain_6DB_N, GPIOPinSet[0]);
+
+	  playWavFile("canS.wav");
+	  if (HAL_I2S_Init(&hi2s2) != HAL_OK)
+	  	 Error_Handler();
+
+	  HAL_GPIO_WritePin(GPIOC, gain_6DB_N, GPIOPinSet[1]);
+	  HAL_GPIO_WritePin(GPIOC, gain_12DB, GPIOPinSet[1]);
+
+	  playWavFile("canS.wav");
+	  if (HAL_I2S_Init(&hi2s2) != HAL_OK)
+	  	 Error_Handler();
+
+	  HAL_GPIO_WritePin(GPIOC, gain_12DB, GPIOPinSet[0]);
+	  HAL_GPIO_WritePin(GPIOC, gain_15DB, GPIOPinSet[1]);
+
+	  playWavFile("canS.wav");
+	  if (HAL_I2S_Init(&hi2s2) != HAL_OK)
+	  	 Error_Handler();
+
+	  HAL_GPIO_WritePin(GPIOC, gain_15DB, GPIOPinSet[0]);
+
 	  if (HAL_I2S_Init(&hi2s2) != HAL_OK)
 		   Error_Handler();
+
+//	  playWavFile(fileNames[playIndex]);
+//	  if (HAL_I2S_Init(&hi2s2) != HAL_OK)
+//		   Error_Handler();
 
     /* USER CODE END WHILE */
 
