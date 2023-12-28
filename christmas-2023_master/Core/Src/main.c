@@ -128,7 +128,7 @@ volatile uint16_t signal_buff1[4096];
 volatile uint16_t signal_buff2[4096];
 
 char *fileNames[] = {"blank.wav", "yard.wav", "shit.wav", "gift.wav", "nut.wav", "grace.wav",
-					"dump.wav", "treeBig.wav", "kma.wav", "winterMorn.wav", "rant.wav"};
+					"dump.wav", "treeBig.wav", "kma.wav", "wint.wav", "rant.wav"};
 
 void HAL_I2S_TxCpltCallback(I2S_HandleTypeDef *hi2s) {
     if(end_of_file_reached)
@@ -355,41 +355,19 @@ int main(void)
   while (1)
   {
 
-//	  HAL_GPIO_WritePin(GPIOC, gain_3DB_N, GPIOPinSet[0]);
-//
-	  playWavFile("canS.wav");
-	  if (HAL_I2S_Init(&hi2s2) != HAL_OK)
-	 	   Error_Handler();
-//
-//	  HAL_GPIO_WritePin(GPIOC, gain_3DB_N, GPIOPinSet[1]);
-//	  HAL_GPIO_WritePin(GPIOC, gain_6DB_N, GPIOPinSet[0]);
-//
-//	  playWavFile("canS.wav");
-//	  if (HAL_I2S_Init(&hi2s2) != HAL_OK)
-//	  	 Error_Handler();
-//
-//	  HAL_GPIO_WritePin(GPIOC, gain_6DB_N, GPIOPinSet[1]);
-//	  HAL_GPIO_WritePin(GPIOC, gain_12DB, GPIOPinSet[1]);
-//
-//	  playWavFile("canS.wav");
-//	  if (HAL_I2S_Init(&hi2s2) != HAL_OK)
-//	  	 Error_Handler();
-//
-//	  HAL_GPIO_WritePin(GPIOC, gain_12DB, GPIOPinSet[0]);
-//	  HAL_GPIO_WritePin(GPIOC, gain_15DB, GPIOPinSet[1]);
-//
-//	  playWavFile("canS.wav");
-//	  if (HAL_I2S_Init(&hi2s2) != HAL_OK)
-//	  	 Error_Handler();
-//
-//	  HAL_GPIO_WritePin(GPIOC, gain_15DB, GPIOPinSet[0]);
-//
-//	  if (HAL_I2S_Init(&hi2s2) != HAL_OK)
-//		   Error_Handler();
-
 	  playWavFile(fileNames[playIndex]);
 	  if (HAL_I2S_Init(&hi2s2) != HAL_OK)
 		   Error_Handler();
+
+	  if(HAL_GPIO_ReadPin(GPIOB, buttonIn_6) == GPIOPinSet[0]) {
+		  playIndex = 6;
+	  }
+	  if(HAL_GPIO_ReadPin(GPIOB, buttonIn_7) == GPIOPinSet[0]) {
+		  playIndex = 7;
+	  }
+	  if(HAL_GPIO_ReadPin(GPIOB, buttonIn_9) == GPIOPinSet[0]) {
+		  playIndex = 9;
+	  }
 
     /* USER CODE END WHILE */
 
@@ -571,7 +549,7 @@ static void MX_TIM4_Init(void)
 
   /* USER CODE END TIM4_Init 1 */
   htim4.Instance = TIM4;
-  htim4.Init.Prescaler = 4801-1;
+  htim4.Init.Prescaler = 9601-1;
   htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim4.Init.Period = 999;
   htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
@@ -673,6 +651,12 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pins : BUTTON_10_Pin BUTTON_8_Pin */
   GPIO_InitStruct.Pin = BUTTON_10_Pin|BUTTON_8_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : BUTTON_9_IN_Pin BUTTON_7_IN_Pin BUTTON_6_IN_Pin */
+  GPIO_InitStruct.Pin = BUTTON_9_IN_Pin|BUTTON_7_IN_Pin|BUTTON_6_IN_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 

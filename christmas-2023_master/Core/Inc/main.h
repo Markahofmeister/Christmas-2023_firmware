@@ -99,9 +99,15 @@ void Error_Handler(void);
 #define BUTTON_10_Pin GPIO_PIN_3
 #define BUTTON_10_GPIO_Port GPIOB
 #define BUTTON_10_EXTI_IRQn EXTI3_IRQn
+#define BUTTON_9_IN_Pin GPIO_PIN_4
+#define BUTTON_9_IN_GPIO_Port GPIOB
 #define BUTTON_8_Pin GPIO_PIN_5
 #define BUTTON_8_GPIO_Port GPIOB
 #define BUTTON_8_EXTI_IRQn EXTI9_5_IRQn
+#define BUTTON_7_IN_Pin GPIO_PIN_8
+#define BUTTON_7_IN_GPIO_Port GPIOB
+#define BUTTON_6_IN_Pin GPIO_PIN_9
+#define BUTTON_6_IN_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 
