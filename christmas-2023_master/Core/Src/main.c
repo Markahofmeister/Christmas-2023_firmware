@@ -95,10 +95,26 @@ uint16_t gain_15DB = GPIO_PIN_3;			// Port C
 // For setting GPIO high or low in a more pretty fashion
 GPIO_PinState GPIOPinSet[2] = {GPIO_PIN_RESET, GPIO_PIN_SET};
 
+// Play index keeps track of which wav file should be
+// played on the next playWavFile() call
 static uint8_t playIndex = 0;
 
+/*
+ *  Volume keeps track of which amplifier gain should be selected
+ *  Will take on values in the range 0-4
+ *  0 = 3dB
+ *  1 = 6dB
+ *  2 = 9dB
+ *  3 = 12dB
+ *  4 = 15dB
+ */
 static uint8_t volume = 2;
 
+/*
+ * Array of all possible LED volume bar values that
+ * might be shifted into the shift register.
+ * Ordered highest volume display to lowest volume display
+ */
 static uint8_t shiftBytes[8] = {0b10000000, 0b01000000, 0b00100000, 0b00010000,
 								0b00001000, 0b00000100, 0b00000010, 0b00000001};
 
@@ -118,8 +134,11 @@ static void MX_TIM4_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-FATFS fs;
+FATFS fs;						// Object to set up FATFS on SD card
 
+/*
+ * flags and buffers for data loading and transmission
+ */
 volatile bool end_of_file_reached = false;
 volatile bool read_next_chunk = false;
 volatile uint16_t* signal_play_buff = NULL;
@@ -127,9 +146,20 @@ volatile uint16_t* signal_read_buff = NULL;
 volatile uint16_t signal_buff1[4096];
 volatile uint16_t signal_buff2[4096];
 
+/*
+ * All 11 strings of file names
+ * fileNames[0] = short, silent wav file that plays when idling
+ * fileNames[1-10] = movie soundbites, ordered based on button order
+ */
+
 char *fileNames[] = {"blank.wav", "yard.wav", "shit.wav", "gift.wav", "nut.wav", "grace.wav",
 					"dump.wav", "treeBig.wav", "kma.wav", "wint.wav", "rant.wav"};
 
+/*
+ * Callback function for I2S TX completion
+ * Enters upon I2S global interrupt
+ * Transmits another chunk of data
+ */
 void HAL_I2S_TxCpltCallback(I2S_HandleTypeDef *hi2s) {
     if(end_of_file_reached)
         return;
@@ -138,17 +168,19 @@ void HAL_I2S_TxCpltCallback(I2S_HandleTypeDef *hi2s) {
     signal_play_buff = signal_read_buff;
     signal_read_buff = temp;
 
-    //uint16_t buffSize = (sizeof(signal_play_buff)) / 4096;
-//
-//    for(int i = 0; i < 4096; i++) {
-//    	signal_play_buff[i] = (float)signal_play_buff[i] * volume;
-//    }
-
     int nsamples = sizeof(signal_buff1) / sizeof(signal_buff1[0]);
     HAL_I2S_Transmit_IT(&hi2s2, (uint16_t*)signal_play_buff, nsamples);
     read_next_chunk = true;
 }
 
+/*
+ * - Opens file with file name of passed argument using f_open()
+ * - Checks WAV file header format and data structuring,
+ *   returns EXIT_FAILURE if a file cannot be played.
+ * - Transmits data using I2S TX IT function,
+ *   which will enter the TX Cplt callback function to transmit another chunk of data
+ * - Enters a loop to move the file pointer when I2S is available to TX more data
+ */
 int playWavFile(const char* fname) {
 
     FIL file;
@@ -343,7 +375,8 @@ int main(void)
   	HAL_GPIO_WritePin(GPIOB, shiftStoreClock, GPIOPinSet[0]);
   	HAL_GPIO_WritePin(GPIOB, shiftOutputEnable, GPIOPinSet[0]);
 
-  FRESULT res = f_mount(&fs, "XMAS-23", 1);
+  	// Initialize FAT file system within SD card
+    FRESULT res = f_mount(&fs, "XMAS-23", 1);
 	 if(res != FR_OK) {
 	   return EXIT_FAILURE;
 	 }
@@ -355,10 +388,18 @@ int main(void)
   while (1)
   {
 
+	  /*
+	   * Always play WavFile, which is usually blank.wav
+	   * playIndex is changed by GPIO EXTI handler
+	   */
 	  playWavFile(fileNames[playIndex]);
 	  if (HAL_I2S_Init(&hi2s2) != HAL_OK)
 		   Error_Handler();
 
+	  /*
+	   * Some GPIOs in Mk. I are incompatible with EXTI,
+	   * so they require loop checking
+	   */
 	  if(HAL_GPIO_ReadPin(GPIOB, buttonIn_6) == GPIOPinSet[0]) {
 		  playIndex = 6;
 	  }
@@ -704,6 +745,12 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 
 }
 
+/*
+ * Necessary to reset all hardware-controlled gain FETs
+ *
+ * Avoids shorting power to ground through accidental
+ * switching sequences
+ */
 void resetGains() {
 	 HAL_GPIO_WritePin(GPIOC, gain_3DB_N, GPIOPinSet[1]);
 	 HAL_GPIO_WritePin(GPIOC, gain_6DB_N, GPIOPinSet[1]);
@@ -711,6 +758,10 @@ void resetGains() {
 	 HAL_GPIO_WritePin(GPIOC, gain_15DB, GPIOPinSet[0]);
 }
 
+/*
+ * Shifts in passed byte of data to shift register and
+ * enables parallel output
+ */
 void shiftNewVol(uint8_t shiftByte) {
 
 		for(int j = 0; j < 8; j++) {
@@ -735,7 +786,10 @@ void shiftNewVol(uint8_t shiftByte) {
 		return;
 }
 
-// Callback: timer has rolled over
+/*
+ * Callback: timer has rolled over and completed one period
+ *
+ */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   // Check which version of the timer triggered this callback
@@ -751,28 +805,33 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	  // Resolution = 12 bit, 2^12 = 4096
 	  uint16_t ADC_Return = HAL_ADC_GetValue(&hadc1);
 
+	  /*
+	   * Shift in new volume bar LED value
+	   */
 	  uint8_t shiftByteCurr = ADC_Return / (4096 / 8);
 	  shiftNewVol(shiftBytes[shiftByteCurr]);
 
+	  // Map ADC reading to volume variable
 	  volume = ADC_Return / (4096 / 5);
+
 	  switch(volume) {
-	  	  case 0:
+	  	  case 0:			// Set gain = 3dB
 	  		  resetGains();
 	  		  HAL_GPIO_WritePin(GPIOC, gain_3DB_N, GPIOPinSet[0]);
 	  		  break;
-	  	  case 1:
+	  	  case 1:			// Set gain = 6dB
 	  		  resetGains();
 	  		  HAL_GPIO_WritePin(GPIOC, gain_6DB_N, GPIOPinSet[0]);
 	  		  break;
-	  	  case 2:
+	  	  case 2:			// Set gain = 9dB
 	  		  resetGains();
 
 	  		  break;
-	  	  case 3:
+	  	  case 3:			// Set gain = 12dB
 	  		  resetGains();
 	  		  HAL_GPIO_WritePin(GPIOC, gain_12DB, GPIOPinSet[1]);
 	  		  break;
-	  	  case 4:
+	  	  case 4:			// Set gain = 15dB
 	  		  resetGains();
 	  		  HAL_GPIO_WritePin(GPIOC, gain_15DB, GPIOPinSet[1]);
 	  		  break;
